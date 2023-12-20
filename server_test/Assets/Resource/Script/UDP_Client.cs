@@ -4,44 +4,39 @@ using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class UDPClient : MonoBehaviour
-{
+public class UDPClient : MonoBehaviour{
     public Text clientStatusText;
 
+
+    [SerializeField] private string TryConnectIPnum;
     private UdpClient udpClient;
     private IPEndPoint serverEndPoint;
 
-    private void Start()
-    {
+    private void Start(){
         udpClient = new UdpClient();
-        serverEndPoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 5555);
+        serverEndPoint = new IPEndPoint(IPAddress.Parse(TryConnectIPnum), 5555);
 
         UpdateClientStatus("Client started");
     }
 
-    private void Update()
-    {
-        // ¿¹Á¦·Î ÀÔ·Â Á¤º¸¸¦ º¸³»´Â ÄÚµå
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
+    private void Update(){
+        // ì˜ˆì œë¡œ ìž…ë ¥ ì •ë³´ë¥¼ ë³´ë‚´ëŠ” ì½”ë“œ
+        if (Input.GetKeyDown(KeyCode.Space)){
             SendInputToServer("Space Key Pressed");
         }
     }
 
-    private void SendInputToServer(string message)
-    {
+    private void SendInputToServer(string message){
         byte[] data = Encoding.UTF8.GetBytes(message);
         udpClient.Send(data, data.Length, serverEndPoint);
         Debug.Log("Sent: " + message);
     }
 
-    private void UpdateClientStatus(string status)
-    {
+    private void UpdateClientStatus(string status){
         clientStatusText.text = "Client Status: " + status;
     }
 
-    private void OnDestroy()
-    {
+    private void OnDestroy(){
         if (udpClient != null)
             udpClient.Close();
     }

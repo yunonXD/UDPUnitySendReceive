@@ -353,7 +353,6 @@
 -analyzer:"C:/Program Files/Unity/Hub/Editor/2022.3.16f1/Editor/Data/Tools/Unity.SourceGenerators/Unity.Properties.SourceGenerator.dll"
 -analyzer:"C:/Program Files/Unity/Hub/Editor/2022.3.16f1/Editor/Data/Tools/Unity.SourceGenerators/Unity.SourceGenerators.dll"
 "Assets/Resource/Script/UDP_Client.cs"
-"Assets/Resource/Script/UDP_Server.cs"
 -langversion:9.0
 
 /deterministic
