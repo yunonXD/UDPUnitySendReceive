@@ -9,14 +9,16 @@ public class UDPServer : MonoBehaviour{
     public Text serverStatusText;
     public Text receivedMessageText;
 
+    [SerializeField] private int m_Port =5555;
+
     private UdpClient udpServer;
     private IPEndPoint remoteEndPoint;
 
     private void Start(){
-        udpServer = new UdpClient(5555);
+        udpServer = new UdpClient(m_Port);
         remoteEndPoint = new IPEndPoint(IPAddress.Any, 0);
 
-        UpdateServerStatus("Server started on port 5555");
+        UpdateServerStatus("Server started on port :" + m_Port);
     }
 
     private void Update(){
@@ -24,15 +26,15 @@ public class UDPServer : MonoBehaviour{
             if (udpServer.Available > 0){
                 byte[] data = udpServer.Receive(ref remoteEndPoint);
                 string message = Encoding.UTF8.GetString(data);
-                Debug.Log("Received: " + message);
+                //Debug.Log("Received: " + message);
 
                 // GUI에 수신한 메시지 표시
                 UpdateReceivedMessage(message);
 
-                // 여기에서 받은 입력 정보(message)를 처리하면 됩니다.
+                // 이곳에서 수신받은 정보를 처리
             }
         }
-        catch (Exception e){
+        catch (Exception e){    //예외처리 >> 대부분의 문제상황에서 이쪽으로 점프
             Debug.LogError("Error receiving data: " + e.Message);
         }
     }
