@@ -355,6 +355,7 @@
 "Assets/Resource/Script/Data/DeviceProxy.cs"
 "Assets/Resource/Script/Data/KeyTable.cs"
 "Assets/Resource/Script/Data/KeyTableManager.cs"
+"Assets/Resource/Script/Data/Scan_Code.cs"
 "Assets/Resource/Script/UDP_Client.cs"
 -langversion:9.0
 
