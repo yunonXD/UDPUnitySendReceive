@@ -5,35 +5,52 @@ using UnityEngine;
 using UnityEngine.UI;
 
 public class UDPClient : MonoBehaviour{
-    public Text clientStatusText;
+    public Text ClientStatusText;
+    public Text Client_TossMessage;
 
 
-    [SerializeField] private string TryConnectIPnum;
+    [SerializeField] private string m_TryConnectIP ="192.168.0.54";
+    [SerializeField] private int m_Port =5555;
     private UdpClient udpClient;
     private IPEndPoint serverEndPoint;
 
+    private int m_Count =0;
+
     private void Start(){
         udpClient = new UdpClient();
-        serverEndPoint = new IPEndPoint(IPAddress.Parse(TryConnectIPnum), 5555);
-
+        serverEndPoint = new IPEndPoint(IPAddress.Parse(m_TryConnectIP), m_Port);
+        m_Count =0;
         UpdateClientStatus("Client started");
     }
 
     private void Update(){
-        // 예제로 입력 정보를 보내는 코드
-        if (Input.GetKeyDown(KeyCode.Space)){
-            SendInputToServer("Space Key Pressed");
-        }
+        SendMessage();
+        CleanScrean();
     }
 
     private void SendInputToServer(string message){
         byte[] data = Encoding.UTF8.GetBytes(message);
         udpClient.Send(data, data.Length, serverEndPoint);
-        Debug.Log("Sent: " + message);
+        Client_TossMessage.text = "Client sent Mess : " + message;
     }
 
     private void UpdateClientStatus(string status){
-        clientStatusText.text = "Client Status: " + status;
+        ClientStatusText.text = "Client Status: " + status;
+    }
+
+    private void SendMessage(){
+        // 예제로 입력 정보를 보내는 코드
+        if (Input.GetKeyDown(KeyCode.Space)){
+            m_Count++;
+            SendInputToServer("Space Key Pressed " +m_Count);
+        }
+    }
+
+    private void CleanScrean(){
+        if(Input.GetKeyDown(KeyCode.F1)){
+            m_Count =0;
+            Client_TossMessage.text = "Client sent Mess :";
+        }
     }
 
     private void OnDestroy(){
