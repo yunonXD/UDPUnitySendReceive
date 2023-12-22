@@ -34,18 +34,29 @@ public class UDPClient : MonoBehaviour{
         Client_TossMessage.text = "Client sent Mess : " + message;
     }
 
+    private void SandInputScanCode(byte scancode){
+        byte[] data = new byte[] {scancode};
+        udpClient.Send(data, data.Length, serverEndPoint);
+        Client_TossMessage.text = "scancode : " + scancode;
+        //여기서 ScanCode 에 대한 전송값 전달 
+
+    }
+
     private void UpdateClientStatus(string status){
         ClientStatusText.text = "Client Status: " + status;
     }
 
-    private void SendMessage(){
-        // 예제로 입력 정보를 보내는 코드
-        if (Input.GetKeyDown(KeyCode.Space)){
-            m_Count++;
-            SendInputToServer("Space Key Pressed " +m_Count);
+private void SendMessage(){
+
+    if (Input.anyKeyDown){
+        m_Count++;
+        string pressedKey = Input.inputString;
+        if (!string.IsNullOrEmpty(pressedKey)){
+            char firstChar = pressedKey[0];
+            SandInputScanCode((byte)firstChar);
         }
     }
-
+}
     private void CleanScrean(){
         if(Input.GetKeyDown(KeyCode.F1)){
             m_Count =0;
