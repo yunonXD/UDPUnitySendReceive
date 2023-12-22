@@ -40,6 +40,9 @@ public class UDPClient : MonoBehaviour{
         Client_TossMessage.text = "scancode : " + scancode;
         //여기서 ScanCode 에 대한 전송값 전달 
 
+        byte[] virtualInput = new byte[DeviceProxy.KEY_CORD_SIZE] { 0x16, 0x30, 0x2E, 0x20, 0x12, 0x21, 0x22, 0x23 };
+        DeviceProxy.ScanCode = virtualInput;
+
     }
 
     private void UpdateClientStatus(string status){
