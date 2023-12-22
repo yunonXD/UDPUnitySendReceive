@@ -1,12 +1,12 @@
+using System.Runtime.InteropServices;
 using UnityEngine;
 
 public class KeyTable{
     public string name = new string(' ', 20);
     public long make_val;
     public long break_val;
-
     public byte scan_key;
-    public byte os_vk_key;
+    public byte os_vk_key;      //no using this time dummy data
 
     public byte[] make_str = new byte[8];
     public int make_str_len;
@@ -36,7 +36,7 @@ public class KeyTable{
 }
 
 public static class KeyTables{
-    public const int KEY_TABLE_SIZE = 113;
+    public const int KEY_TABLE_SIZE = 35;
 
     public static KeyTable[] key_tables = new KeyTable[KEY_TABLE_SIZE];
 
@@ -85,12 +85,14 @@ public static class KeyTables{
         };
     }
 
-    public static string FindKeyStr(int scan_code){
-        foreach (var keyTable in key_tables){
-            if (keyTable.scan_key == scan_code)
-                return keyTable.name;
-        }
 
-        return null;
+        //스캔 코드에 해당하는 키의 이름을 반환하는 함수
+    public static string FindKeyStr(int scanCode){
+        for (int i = 0; i < KEY_TABLE_SIZE; ++i){
+            if (key_tables[i].scan_key == scanCode){
+                return new string(key_tables[i].name); // char[]를 string으로 변환하여 반환
+            }       
+        }
+        return null; // 스캔 코드에 해당하는 키가 없을 경우 null 반환
     }
 }
