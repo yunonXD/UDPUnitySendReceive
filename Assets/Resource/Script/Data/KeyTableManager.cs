@@ -4,7 +4,6 @@ public class KeyTableManager : MonoBehaviour{
 
     private void Start(){
         InitKeyTable();
-        
     }
 
     void InitKeyTable(){
