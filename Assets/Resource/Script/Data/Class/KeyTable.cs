@@ -1,7 +1,6 @@
 using UnityEngine;
 
-public class KeyTable
-{
+public class KeyTable{
     public string name = new string(' ', 20);
     public long make_val;
     public long break_val;
@@ -14,8 +13,7 @@ public class KeyTable
     public byte[] break_str = new byte[8];
     public int break_str_len;
 
-    public KeyTable()
-    {
+    public KeyTable(){
         System.Array.Clear(name.ToCharArray(), 0, name.Length);
         make_val = 0;
         break_val = 0;
@@ -23,11 +21,9 @@ public class KeyTable
         os_vk_key = 0;
     }
 
-    public KeyTable(string aName, long aMakeVal, long aBreakVal, byte aScanKey, byte aOSVirtualKey = 0)
-    {
+    public KeyTable(string aName, long aMakeVal, long aBreakVal, byte aScanKey, byte aOSVirtualKey = 0){
         System.Array.Clear(name.ToCharArray(), 0, name.Length);
-        if (!string.IsNullOrEmpty(aName))
-        {
+        if (!string.IsNullOrEmpty(aName)){
             int length = Mathf.Min(aName.Length, name.Length);
             System.Array.Copy(aName.ToCharArray(), name.ToCharArray(), length);
         }
@@ -39,21 +35,17 @@ public class KeyTable
     }
 }
 
-public static class KeyTables
-{
+public static class KeyTables{
     public const int KEY_TABLE_SIZE = 113;
 
     public static KeyTable[] key_tables = new KeyTable[KEY_TABLE_SIZE];
 
-    static KeyTables()
-    {
+    static KeyTables(){
         InitializeKeyTables();
     }
 
-    static void InitializeKeyTables()
-    {
-        key_tables = new KeyTable[]
-        {
+    static void InitializeKeyTables(){
+        key_tables = new KeyTable[]{
             new KeyTable("A", 0x1C, 0xF01C, Scan_Code.SCAN_A, (byte)'A'),
             new KeyTable("B", 0x32, 0xF032, Scan_Code.SCAN_B, (byte)'B'),
             new KeyTable("C", 0x21, 0xF021, Scan_Code.SCAN_C, (byte)'C'),
@@ -93,10 +85,8 @@ public static class KeyTables
         };
     }
 
-    public static string FindKeyStr(int scan_code)
-    {
-        foreach (var keyTable in key_tables)
-        {
+    public static string FindKeyStr(int scan_code){
+        foreach (var keyTable in key_tables){
             if (keyTable.scan_key == scan_code)
                 return keyTable.name;
         }
