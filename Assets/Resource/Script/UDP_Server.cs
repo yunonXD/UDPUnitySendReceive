@@ -31,7 +31,10 @@ public class UDPServer : MonoBehaviour{
                 // GUI에 수신한 메시지 표시
                 UpdateReceivedMessage(message);
 
-                // 이곳에서 수신받은 정보를 처리
+                // 이곳에서 수신받은 정보를 처리--> 
+                
+                KeyTableManager.Check();
+
             }
         }
         catch (Exception e){    //예외처리 >> 대부분의 문제상황에서 이쪽으로 점프
