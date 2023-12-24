@@ -1,15 +1,18 @@
+using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class UDPClient : MonoBehaviour{
     public Text ClientStatusText;
     public Text Client_TossMessage;
+    public TMP_InputField TextIP;
 
 
-    [SerializeField] private string m_TryConnectIP ="192.168.0.54";
+    [SerializeField] private string m_TryConnectIP ="192.168.0.1"; //54
     [SerializeField] private int m_Port =5555;
     private UdpClient udpClient;
     private IPEndPoint serverEndPoint;
@@ -25,7 +28,13 @@ public class UDPClient : MonoBehaviour{
 
     private void Update(){
         SendMessage();
+        ReceiveMessage();
         CleanScrean();
+    }
+
+    public void InPut_IP(){
+        string P_ip = TextIP.text;
+        m_TryConnectIP = P_ip;
     }
 
     private void SendInputToServer(string message){
@@ -34,32 +43,66 @@ public class UDPClient : MonoBehaviour{
         Client_TossMessage.text = "Client sent Mess : " + message;
     }
 
-    private void SandInputScanCode(byte scancode){
-        byte[] data = new byte[] {scancode};
-        udpClient.Send(data, data.Length, serverEndPoint);
-        Client_TossMessage.text = "scancode : " + scancode;
-        //여기서 ScanCode 에 대한 전송값 전달 
-
-        byte[] virtualInput = new byte[DeviceProxy.KEY_CORD_SIZE] { 0x16, 0x30, 0x2E, 0x20, 0x12, 0x21, 0x22, 0x23 };
-        DeviceProxy.ScanCode = virtualInput;
-
-    }
 
     private void UpdateClientStatus(string status){
         ClientStatusText.text = "Client Status: " + status;
     }
 
-private void SendMessage(){
 
-    if (Input.anyKeyDown){
-        m_Count++;
-        string pressedKey = Input.inputString;
-        if (!string.IsNullOrEmpty(pressedKey)){
-            char firstChar = pressedKey[0];
-            SandInputScanCode((byte)firstChar);
+   private void SandInputScanCode(byte[] virtualInput){
+        udpClient.Send(virtualInput, virtualInput.Length, serverEndPoint);
+        Client_TossMessage.text = "Virtual Key Table sent to server." + BitConverter.ToString(virtualInput);
+    }
+
+    //서버에게 전송할 가상 키테이블 생성
+    private byte[] GenerateVirtualKey(char inputkey){
+        //byte scanCode = (byte)inputkey;
+        //return new byte[DeviceProxy.KEY_CORD_SIZE] { scanCode, 0, 0, 0, 0, 0, 0, 0 };
+
+
+        // 입력한 문자에 해당하는 상수명
+        string constantName = "SCAN_" + inputkey.ToString().ToUpper();
+        Debug.Log(constantName);
+
+        // 상수명에 해당하는 상수가 정의되어 있는지 확인
+        if (Enum.IsDefined(typeof(Scan_Code), constantName)){
+            // 상수명에 해당하는 상수 값을 가져오기
+            int scanCodeValue = (int)Enum.Parse(typeof(Scan_Code), constantName);
+
+            return new byte[DeviceProxy.KEY_CORD_SIZE] { (byte)scanCodeValue, 0, 0, 0, 0, 0, 0, 0 };
+        }
+        else{
+            // 상수가 정의되어 있지 않으면 기본값 반환 또는 예외 처리
+            return new byte[DeviceProxy.KEY_CORD_SIZE] { 0, 0, 0, 0, 0, 0, 0, 0 };
         }
     }
-}
+
+
+    private void SendMessage(){
+        if (Input.anyKeyDown){
+            m_Count++;
+            string pressedKey = Input.inputString;
+            if (!string.IsNullOrEmpty(pressedKey)){
+                char firstChar = pressedKey[0];
+                byte[] virtualInput = GenerateVirtualKey(firstChar);
+                SandInputScanCode(virtualInput);
+            }
+        }
+    }
+
+    private void ReceiveMessage(){
+        try{
+            if (udpClient.Available > 0){
+                byte[] data = udpClient.Receive(ref serverEndPoint);
+                Debug.Log("Received from server: " + Encoding.UTF8.GetString(data));
+                //서버 메시지 리시브
+            }
+        }
+        catch (Exception e){
+            Debug.LogError("Error receiving data from server: " + e.Message);
+        }
+    }
+
     private void CleanScrean(){
         if(Input.GetKeyDown(KeyCode.F1)){
             m_Count =0;

@@ -7,6 +7,7 @@ using UnityEngine.UI;
 
 public class UDPServer : MonoBehaviour{
     public Text serverStatusText;
+    public Text StateText;
     public Text receivedMessageText;
 
     [SerializeField] private int m_Port =5555;
@@ -25,20 +26,34 @@ public class UDPServer : MonoBehaviour{
         try{
             if (udpServer.Available > 0){
                 byte[] data = udpServer.Receive(ref remoteEndPoint);
-                string message = Encoding.UTF8.GetString(data);
-                //Debug.Log("Received: " + message);
 
-                // GUI에 수신한 메시지 표시
-                UpdateReceivedMessage(message);
-
-                // 이곳에서 수신받은 정보를 처리--> 
+                DeviceProxy.ScanCode = data;
                 
-                KeyTableManager.Check();
+                bool integrityCheckResult = KeyTableManager.Check();    //무결성검사 여부 확인
+
+                if (integrityCheckResult){
+                    StateText.text = "Key Table integrity check passed.";
+                    receivedMessageText.text = "Scancode: " + BitConverter.ToString(DeviceProxy.ScanCode);
+                }
+                else{
+                    receivedMessageText.text = "Key Table integrity check failed!";
+                }
 
             }
         }
         catch (Exception e){    //예외처리 >> 대부분의 문제상황에서 이쪽으로 점프
             Debug.LogError("Error receiving data: " + e.Message);
+        }
+    }
+
+    public void ScanCodeTester(){
+        bool integrityCheckResult = KeyTableManager.Check(); // 무결성 검사 여부 확인
+        if (integrityCheckResult){
+            StateText.text = "Key Table integrity check passed.";
+            receivedMessageText.text = "Scancode: " + BitConverter.ToString(DeviceProxy.ScanCode);
+        }
+        else{
+            receivedMessageText.text = "Key Table integrity check failed!";
         }
     }
 

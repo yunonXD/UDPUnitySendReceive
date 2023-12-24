@@ -6,7 +6,7 @@ public class KeyTableManager : MonoBehaviour{
         InitKeyTable();
     }
 
-    void InitKeyTable(){
+    void InitKeyTable(){        //키 테이블에 있는 각 키에 대한 make_str , break_str 생성
 
         for (int i = 0; i < KeyTables.KEY_TABLE_SIZE; ++i){
             KeyTables.key_tables[i].make_str_len = MakeKeyString(KeyTables.key_tables[i].make_str, KeyTables.key_tables[i].make_val);
@@ -17,7 +17,7 @@ public class KeyTableManager : MonoBehaviour{
         }
     }
 
-    public int MakeKeyString(byte[] dest, long input){
+    public int MakeKeyString(byte[] dest, long input){  // long 형 값을 받아 byte 배열로 변환, null이 아닌 값만을 복사하여 목표 배열에 저장.
         // 인풋받은 값을 byte arry로 변경
         byte[] temp = new byte[sizeof(long)];
         int len = 0;
@@ -123,6 +123,7 @@ public class KeyTableManager : MonoBehaviour{
         return false;
     }
 
+    //키 이벤트를 설정하는 메서드, 키 인덱스와 이벤트 유형을 받아 로그를 출력.
     private static void SetKeyEvent(int KeyIdx ,bool isMake){
         RzPair<int, bool> newPair = new RzPair<int, bool>{
             Key = KeyIdx,
@@ -132,7 +133,7 @@ public class KeyTableManager : MonoBehaviour{
         PzMap<int ,bool> keyEvent = new PzMap<int, bool>();
         keyEvent.Append(newPair);
 
-        Debug.Log($"SetKeyEvent - KeyIndex: {KeyIdx}, IsMake: {isMake}");
+        Debug.Log($"SetKeyEvent - KeyIndex: {newPair.Key}, IsMake: {newPair.Item}");
         
     }
 
@@ -160,5 +161,3 @@ public class KeyTableManager : MonoBehaviour{
         return true;
     }
 }
-
-
