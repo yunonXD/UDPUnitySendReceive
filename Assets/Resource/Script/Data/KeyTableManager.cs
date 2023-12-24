@@ -46,11 +46,7 @@ public class KeyTableManager : MonoBehaviour{
         byte[] virtualInput = new byte[DeviceProxy.KEY_CORD_SIZE] { 0x16, 0x30, 0x2E, 0x20, 0x12, 0x21, 0x22, 0x23 };
 
         DeviceProxy.ScanCode = virtualInput;
-        if (Check()) {
-            Debug.Log("Input Test Successful! Key matched.");
-        } else {
-            Debug.Log("Input Test Failed! Key not matched.");
-        }
+
     }
 
     public void ButtonCheckTest(){
