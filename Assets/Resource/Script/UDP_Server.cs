@@ -24,31 +24,26 @@ public class UDPServer : MonoBehaviour{
 
     private void Update(){
         try{
+
             if (udpServer.Available > 0){
-                byte[] data = udpServer.Receive(ref remoteEndPoint);
 
-                DeviceProxy.ScanCode = data;
-                
-                bool integrityCheckResult = KeyTableManager.Check();    //무결성검사 여부 확인
+                byte[] data = udpServer.Receive(ref remoteEndPoint);    //클라이언트에게 받아온 데이터
 
-                if (integrityCheckResult){
-                    StateText.text = "Key Table integrity check passed.";
-                    receivedMessageText.text = "Scancode: " + BitConverter.ToString(DeviceProxy.ScanCode);
-                }
-                else{
-                    receivedMessageText.text = "Key Table integrity check failed!";
-                }
+                DeviceProxy.ScanCode = data;        //를 스캔코드에 쏘옥
 
+                ScanCodeTester();
             }
         }
-        catch (Exception e){    //예외처리 >> 대부분의 문제상황에서 이쪽으로 점프
+        catch (Exception e){
+
             Debug.LogError("Error receiving data: " + e.Message);
         }
     }
 
-    public void ScanCodeTester(){
-        bool integrityCheckResult = KeyTableManager.Check(); // 무결성 검사 여부 확인
-        if (integrityCheckResult){
+    public void ScanCodeTester(){       //무결성 검사
+
+        if (KeyTableManager.Check()){
+
             StateText.text = "Key Table integrity check passed.";
             receivedMessageText.text = "Scancode: " + BitConverter.ToString(DeviceProxy.ScanCode);
         }

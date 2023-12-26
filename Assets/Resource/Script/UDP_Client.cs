@@ -37,10 +37,9 @@ public class UDPClient : MonoBehaviour{
         m_TryConnectIP = P_ip;
     }
 
-    private void SendInputToServer(string message){
-        byte[] data = Encoding.UTF8.GetBytes(message);
-        udpClient.Send(data, data.Length, serverEndPoint);
-        Client_TossMessage.text = "Client sent Mess : " + message;
+    private void SendInputToServer(byte[] virtualInput){
+    udpClient.Send(virtualInput, virtualInput.Length, serverEndPoint);
+    Client_TossMessage.text = "Client sent Message: " + BitConverter.ToString(virtualInput);
     }
 
 
@@ -79,9 +78,12 @@ public class UDPClient : MonoBehaviour{
 
 
     private void SendMessage(){
+
         if (Input.anyKeyDown){
+
             m_Count++;
             string pressedKey = Input.inputString;
+
             if (!string.IsNullOrEmpty(pressedKey)){
                 char firstChar = pressedKey[0];
                 byte[] virtualInput = GenerateVirtualKey(firstChar);
