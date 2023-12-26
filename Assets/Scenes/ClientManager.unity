@@ -991,7 +991,7 @@ MonoBehaviour:
   ClientStatusText: {fileID: 2080689320}
   Client_TossMessage: {fileID: 1623390972}
   TextIP: {fileID: 699679252}
-  m_TryConnectIP: 192.168.0.54
+  m_TryConnectIP: 192.168.0.53
   m_Port: 5555
 --- !u!1 &2080689317
 GameObject:

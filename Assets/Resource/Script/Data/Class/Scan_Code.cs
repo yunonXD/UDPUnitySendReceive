@@ -1,5 +1,4 @@
-public class Scan_Code
-{
+public class Scan_Code{
     public const int SCAN_ESCAPE = 0x01;
     public const int SCAN_1 = 0x02;
     public const int SCAN_2 = 0x03;

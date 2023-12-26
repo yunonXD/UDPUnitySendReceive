@@ -2,7 +2,6 @@ using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
-using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -16,7 +15,7 @@ public class UDP_ClientV2 : MonoBehaviour{
 
     [SerializeField] private string m_TryConnectIP ="192.168.0.1"; //54
     [SerializeField]private int port =5555;
-    public TMP_InputField TextIP;
+    public InputField TextIP;
 
     void Start(){
         try{
@@ -30,23 +29,15 @@ public class UDP_ClientV2 : MonoBehaviour{
     }
 
      void Update(){
+        if (Input.anyKeyDown){
+            string inputString = Input.inputString;
 
-        try{
-            if (Input.GetKeyDown(KeyCode.UpArrow)){
-                SendInputToServer("up");
+            if (!string.IsNullOrEmpty(inputString)){
+
+                byte[] data = Encoding.UTF8.GetBytes(inputString.PadRight(8)); // 8바이트로 패딩
+                udpClient.Send(data, data.Length, serverEndPoint);
+                Client_TossMessage.text = $"Sent to server: {inputString}";
             }
-            else if (Input.GetKeyDown(KeyCode.DownArrow)){
-                SendInputToServer("down");
-            }
-            else if (Input.GetKeyDown(KeyCode.LeftArrow)){
-                SendInputToServer("left");
-            }
-            else if (Input.GetKeyDown(KeyCode.RightArrow)){
-                SendInputToServer("right");
-            }
-        }
-        catch(Exception ex){
-            Debug.LogError("Error during client update: " + ex.Message);
         }
     }
 

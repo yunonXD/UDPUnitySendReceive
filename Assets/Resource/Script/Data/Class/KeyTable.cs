@@ -19,6 +19,8 @@ using UnityEngine;
         os_vk_key = 0;
     }
 
+    //(키의 이름 , 눌렀을때 의 값 , 땠을때의 값 , 스캔코드 , 가상키)
+    //또한 눌렀을때의 문자열 길이, 땠을때의 문자열 길이 저장
     public KeyTable(string aName, long aMakeVal, long aBreakVal, byte aScanKey, byte aOSVirtualKey = 0){
         System.Array.Clear(name.ToCharArray(), 0, name.Length);
         if (!string.IsNullOrEmpty(aName)){
@@ -36,6 +38,7 @@ using UnityEngine;
 public static class KeyTables{
     public const int KEY_TABLE_SIZE = 35;
 
+    //public static KeyTable[] key_tables;
     public static KeyTable[] key_tables = new KeyTable[KEY_TABLE_SIZE];
 
     static KeyTables(){
@@ -79,7 +82,8 @@ public static class KeyTables{
             new KeyTable("6", 0x36, 0xF036, Scan_Code.SCAN_6, (byte)'6'),
             new KeyTable("7", 0x3D, 0xF03D, Scan_Code.SCAN_7, (byte)'7'),
             new KeyTable("8", 0x3E, 0xF03E, Scan_Code.SCAN_8, (byte)'8'),
-            new KeyTable("9", 0x46, 0xF046, Scan_Code.SCAN_9, (byte)'9')
+            new KeyTable("9", 0x46, 0xF046, Scan_Code.SCAN_9, (byte)'9'),
+            new KeyTable("`", 0x0E, 0xF00E, Scan_Code.SCAN_APOSTROPHE, 222)
         };
     }
 
