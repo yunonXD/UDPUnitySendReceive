@@ -28,18 +28,46 @@ public class UDP_ClientV2 : MonoBehaviour{
         }
     }
 
-     void Update(){
+    void Update(){
         if (Input.anyKeyDown){
             string inputString = Input.inputString;
 
             if (!string.IsNullOrEmpty(inputString)){
 
-                byte[] data = Encoding.UTF8.GetBytes(inputString.PadRight(8)); // 8바이트로 패딩
-                udpClient.Send(data, data.Length, serverEndPoint);
-                Client_TossMessage.text = $"Sent to server: {inputString}";
+
+                    
+
+
+                //byte[] data = Encoding.UTF8.GetBytes(inputString.PadRight(8)); // 8바이트로 패딩
+
+            // 역으로 리버스
+            //ReverseByteArray(data);
+
+            udpClient.Send(data, data.Length, serverEndPoint);
+            Client_TossMessage.text = $"Sent to server: {inputString}";
             }
         }
     }
+
+// 바이트 배열을 역으로 리버스하는 함수
+void ReverseByteArray(byte[] array)
+{
+    int i = 0;
+    int j = array.Length - 1;
+
+    while (i < j)
+    {
+        // Swap array[i] and array[j]
+        byte temp = array[i];
+        array[i] = array[j];
+        array[j] = temp;
+
+        // Move indices towards the center
+        i++;
+        j--;
+    }
+}
+
 
 
     void SendInputToServer(string userInput){

@@ -155,7 +155,7 @@ public class KeyTableManager : MonoBehaviour{
         for (int i = 0; i < KEY_TABLE_SIZE; ++i){
 
             KeyTables.key_tables[i].make_str_len = make_key_string(KeyTables.key_tables[i].make_str, KeyTables.key_tables[i].make_val);
-
+                
             if (KeyTables.key_tables[i].make_str_len == 0)
                 throw new Exception("KeyTable initialization error: Length mismatch");      //테이블 길이가 0? 무조건 에러
 

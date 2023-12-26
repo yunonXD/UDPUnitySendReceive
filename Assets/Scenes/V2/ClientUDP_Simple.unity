@@ -895,8 +895,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ClientStatusText: {fileID: 772321319}
   Client_TossMessage: {fileID: 411129824}
-  m_TryConnectIP: 192.168.0.53
-  port: 5555
+  m_TryConnectIP: 192.168.0.115
+  port: 9020
   TextIP: {fileID: 815187355}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
