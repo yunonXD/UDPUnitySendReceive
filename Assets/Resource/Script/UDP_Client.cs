@@ -1,8 +1,6 @@
 using System;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
-using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -11,7 +9,7 @@ public class UDPClient : MonoBehaviour{
 #region TextField
     public Text ClientStatusText;
     public Text Client_TossMessage;
-    public TMP_InputField TextIP;
+    public InputField TextIP;
 #endregion
 
 #region ClientField
