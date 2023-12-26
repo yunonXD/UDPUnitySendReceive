@@ -55,9 +55,6 @@ public class UDPClient : MonoBehaviour{
 
     //서버에게 전송할 가상 키테이블 생성
     private byte[] GenerateVirtualKey(char inputkey){
-        //byte scanCode = (byte)inputkey;
-        //return new byte[DeviceProxy.KEY_CORD_SIZE] { scanCode, 0, 0, 0, 0, 0, 0, 0 };
-
 
         // 입력한 문자에 해당하는 상수명
         string constantName = "SCAN_" + inputkey.ToString().ToUpper();
