@@ -7,28 +7,29 @@ using UnityEngine;
 using UnityEngine.UI;
 
 public class UDPClient : MonoBehaviour{
+
+#region TextField
     public Text ClientStatusText;
     public Text Client_TossMessage;
     public TMP_InputField TextIP;
+#endregion
 
-
+#region ClientField
     [SerializeField] private string m_TryConnectIP ="192.168.0.1"; //54
     [SerializeField] private int m_Port =5555;
     private UdpClient udpClient;
     private IPEndPoint serverEndPoint;
+#endregion
 
-    private int m_Count =0;
 
     private void Start(){
         udpClient = new UdpClient();
         serverEndPoint = new IPEndPoint(IPAddress.Parse(m_TryConnectIP), m_Port);
-        m_Count =0;
         UpdateClientStatus("Client started");
     }
 
     private void Update(){
         SendMessage();
-        ReceiveMessage();
         CleanScrean();
     }
 
@@ -62,6 +63,7 @@ public class UDPClient : MonoBehaviour{
 
         // 상수명에 해당하는 상수가 정의되어 있는지 확인
         if (Enum.IsDefined(typeof(Scan_Code), constantName)){
+
             // 상수명에 해당하는 상수 값을 가져오기
             int scanCodeValue = (int)Enum.Parse(typeof(Scan_Code), constantName);
 
@@ -78,7 +80,6 @@ public class UDPClient : MonoBehaviour{
 
         if (Input.anyKeyDown){
 
-            m_Count++;
             string pressedKey = Input.inputString;
 
             if (!string.IsNullOrEmpty(pressedKey)){
@@ -89,27 +90,16 @@ public class UDPClient : MonoBehaviour{
         }
     }
 
-    private void ReceiveMessage(){
-        try{
-            if (udpClient.Available > 0){
-                byte[] data = udpClient.Receive(ref serverEndPoint);
-                Debug.Log("Received from server: " + Encoding.UTF8.GetString(data));
-                //서버 메시지 리시브
-            }
-        }
-        catch (Exception e){
-            Debug.LogError("Error receiving data from server: " + e.Message);
-        }
-    }
 
     private void CleanScrean(){
+
         if(Input.GetKeyDown(KeyCode.F1)){
-            m_Count =0;
             Client_TossMessage.text = "Client sent Mess :";
         }
     }
 
     private void OnDestroy(){
+
         if (udpClient != null)
             udpClient.Close();
     }
