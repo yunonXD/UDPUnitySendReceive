@@ -50,7 +50,7 @@ public class KeyTableManager : MonoBehaviour{
             }
 
             Array.Copy(buff, m_ScanCode, m_nMsgCount);
-            Check();
+            //Check();
             m_nMsgCount++;
         }
         #endif
@@ -65,70 +65,70 @@ public class KeyTableManager : MonoBehaviour{
     }
 
     // 특정 키, 코드 패턴과 입력된 데이터를 비교하여 해당되는 키 이벤트를 처리하는 함수
-    public static bool Check(){
-        for (int j = 0; j < KEY_TABLE_SIZE; ++j){
-            if (CompareArrays(KeyTables.key_tables[j].make_str, m_ScanCode, KeyTables.key_tables[j].make_str_len)){
-                set_key_event(j, true);
-                m_nMsgCount = 0;
+    // public static bool Check(){
+    //     for (int j = 0; j < KEY_TABLE_SIZE; ++j){
+    //         if (CompareArrays(KeyTables.key_tables[j].make_str, m_ScanCode, KeyTables.key_tables[j].make_str_len)){
+    //             set_key_event(j, true);
+    //             m_nMsgCount = 0;
 
-                // 큐 없으면 따로 작성해둔 버퍼로 작동함.
-                #if _QUEUE_
-                Debug.Log("using queue Clear");
-                Array.Clear(m_ScanCode, 0, DeviceProxy.KEY_CORD_SIZE);
-                return true;
-                #else
-                Debug.Log("using replace_buff");
-                replace_buff();
-                return true;
-                #endif
-            }
-            else if (CompareArrays(KeyTables.key_tables[j].break_str, m_ScanCode, KeyTables.key_tables[j].break_str_len)){
-                m_nMsgCount = 0;
-                set_key_event(j, false);
+    //             // 큐 없으면 따로 작성해둔 버퍼로 작동함.
+    //             #if _QUEUE_
+    //             Debug.Log("using queue Clear");
+    //             Array.Clear(m_ScanCode, 0, DeviceProxy.KEY_CORD_SIZE);
+    //             return true;
+    //             #else
+    //             Debug.Log("using replace_buff");
+    //             replace_buff();
+    //             return true;
+    //             #endif
+    //         }
+    //         else if (CompareArrays(KeyTables.key_tables[j].break_str, m_ScanCode, KeyTables.key_tables[j].break_str_len)){
+    //             m_nMsgCount = 0;
+    //             set_key_event(j, false);
 
-                // 큐 없으면 따로 작성해둔 버퍼로 작동함.
-                #if _QUEUE_
-                Debug.Log("using queue Clear");
-                Array.Clear(m_ScanCode, 0, DeviceProxy.KEY_CORD_SIZE);
-                return true;
-                #else
-                Debug.Log("using replace_buff");
-                replace_buff();
-                return true;
-                #endif
-            }   
-        }
+    //             // 큐 없으면 따로 작성해둔 버퍼로 작동함.
+    //             #if _QUEUE_
+    //             Debug.Log("using queue Clear");
+    //             Array.Clear(m_ScanCode, 0, DeviceProxy.KEY_CORD_SIZE);
+    //             return true;
+    //             #else
+    //             Debug.Log("using replace_buff");
+    //             replace_buff();
+    //             return true;
+    //             #endif
+    //         }   
+    //     }
 
-        // 큐 사용하는데 없으면 false 리턴
-        #if _QUEUE_
-        Debug.Log("using queue. m_nMsgCount == DeviceProxy.KEY_CORD_SIZE - ? part(line number 104)");
+    //     // 큐 사용하는데 없으면 false 리턴
+    //     #if _QUEUE_
+    //     Debug.Log("using queue. m_nMsgCount == DeviceProxy.KEY_CORD_SIZE - ? part(line number 104)");
         
-        if (m_nMsgCount == DeviceProxy.KEY_CORD_SIZE - 1){
-            Debug.Log("KEYCODE MISMATCH");
+    //     if (m_nMsgCount == DeviceProxy.KEY_CORD_SIZE - 1){
+    //         Debug.Log("KEYCODE MISMATCH");
 
-            byte[] tmp_code = new byte[DeviceProxy.KEY_CORD_SIZE];
-            Array.Copy(m_ScanCode, tmp_code, DeviceProxy.KEY_CORD_SIZE);
-            Array.Copy(tmp_code, 1, m_ScanCode, 0, DeviceProxy.KEY_CORD_SIZE - 1);
-            m_ScanCode[DeviceProxy.KEY_CORD_SIZE - 1] = 0;
+    //         byte[] tmp_code = new byte[DeviceProxy.KEY_CORD_SIZE];
+    //         Array.Copy(m_ScanCode, tmp_code, DeviceProxy.KEY_CORD_SIZE);
+    //         Array.Copy(tmp_code, 1, m_ScanCode, 0, DeviceProxy.KEY_CORD_SIZE - 1);
+    //         m_ScanCode[DeviceProxy.KEY_CORD_SIZE - 1] = 0;
 
-            m_nMsgCount = DeviceProxy.KEY_CORD_SIZE - 2;
+    //         m_nMsgCount = DeviceProxy.KEY_CORD_SIZE - 2;
 
-            return false;
-        }
-        #else
-        if (m_nMsgCount == DeviceProxy.KEY_CORD_SIZE){
-            Debug.Log("KEYCODE MISMATCH");
+    //         return false;
+    //     }
+    //     #else
+    //     if (m_nMsgCount == DeviceProxy.KEY_CORD_SIZE){
+    //         Debug.Log("KEYCODE MISMATCH");
 
-            buff_count = m_nMsgCount = 0;
-            Array.Clear(buff, 0, DeviceProxy.MAX_LINE);
-            Array.Clear(m_ScanCode, 0, DeviceProxy.KEY_CORD_SIZE);
+    //         buff_count = m_nMsgCount = 0;
+    //         Array.Clear(buff, 0, DeviceProxy.MAX_LINE);
+    //         Array.Clear(m_ScanCode, 0, DeviceProxy.KEY_CORD_SIZE);
 
-            return true;
-        }
-        #endif
+    //         return true;
+    //     }
+    //     #endif
 
-        return false;
-    }
+    //     return false;
+    // }
 
     // 배열 비교 함수   arr1 과 arr2 의 길이가 같다면 true
     static public bool CompareArrays(byte[] arr1, byte[] arr2, int length){
@@ -150,16 +150,14 @@ public class KeyTableManager : MonoBehaviour{
 
 
     // 키테이블 초기화
-    void init_key_table(){
+    public void init_key_table(){
+    foreach (var keyTable in KeyTables.keyTableDictionary.Values){
+        keyTable.make_str_len = make_key_string(keyTable.make_str, keyTable.make_val);
 
-        for (int i = 0; i < KEY_TABLE_SIZE; ++i){
+        if (keyTable.make_str_len == 0)
+            throw new Exception("KeyTable initialization error: Length mismatch");
 
-            KeyTables.key_tables[i].make_str_len = make_key_string(KeyTables.key_tables[i].make_str, KeyTables.key_tables[i].make_val);
-                
-            if (KeyTables.key_tables[i].make_str_len == 0)
-                throw new Exception("KeyTable initialization error: Length mismatch");      //테이블 길이가 0? 무조건 에러
-
-            KeyTables.key_tables[i].break_str_len = make_key_string(KeyTables.key_tables[i].break_str, KeyTables.key_tables[i].break_val);
+        keyTable.break_str_len = make_key_string(keyTable.break_str, keyTable.break_val);
         }
     }
 

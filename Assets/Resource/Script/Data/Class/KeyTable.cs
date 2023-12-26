@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using UnityEngine;
+
     public class KeyTable{
     public string name = new string(' ', 20);
     public long make_val;
@@ -22,8 +24,10 @@ using UnityEngine;
     //(키의 이름 , 눌렀을때 의 값 , 땠을때의 값 , 스캔코드 , 가상키)
     //또한 눌렀을때의 문자열 길이, 땠을때의 문자열 길이 저장
     public KeyTable(string aName, long aMakeVal, long aBreakVal, byte aScanKey, byte aOSVirtualKey = 0){
+
         System.Array.Clear(name.ToCharArray(), 0, name.Length);
         if (!string.IsNullOrEmpty(aName)){
+
             int length = Mathf.Min(aName.Length, name.Length);
             System.Array.Copy(aName.ToCharArray(), name.ToCharArray(), length);
         }
@@ -36,17 +40,18 @@ using UnityEngine;
 }
 
 public static class KeyTables{
-    public const int KEY_TABLE_SIZE = 35;
+    public static readonly Dictionary<string, KeyTable> keyTableDictionary = new Dictionary<string, KeyTable>();
 
-    //public static KeyTable[] key_tables;
-    public static KeyTable[] key_tables = new KeyTable[KEY_TABLE_SIZE];
+    public const int KEY_TABLE_SIZE = 35;
 
     static KeyTables(){
         InitializeKeyTables();
     }
 
-    static void InitializeKeyTables(){
-        key_tables = new KeyTable[]{
+    static void InitializeKeyTables()
+    {
+        var keyTables = new KeyTable[]
+        {
             new KeyTable("A", 0x1C, 0xF01C, Scan_Code.SCAN_A, (byte)'A'),
             new KeyTable("B", 0x32, 0xF032, Scan_Code.SCAN_B, (byte)'B'),
             new KeyTable("C", 0x21, 0xF021, Scan_Code.SCAN_C, (byte)'C'),
@@ -85,13 +90,18 @@ public static class KeyTables{
             new KeyTable("9", 0x46, 0xF046, Scan_Code.SCAN_9, (byte)'9'),
             new KeyTable("`", 0x0E, 0xF00E, Scan_Code.SCAN_APOSTROPHE, 222)
         };
+
+        foreach (var keyTable in keyTables)
+        {
+            keyTableDictionary[keyTable.name] = keyTable;
+        }
     }
 
-    public static string FindKeyStr(int scanCode){
-        for (int i = 0; i < KEY_TABLE_SIZE; ++i){
-            if (key_tables[i].scan_key == scanCode){
-                return key_tables[i].name;
-            }
+    public static string FindKeyStr(string name)
+    {
+        if (keyTableDictionary.TryGetValue(name, out var keyTable))
+        {
+            return keyTable.name;
         }
 
         return null;
