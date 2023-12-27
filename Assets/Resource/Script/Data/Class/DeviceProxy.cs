@@ -5,7 +5,7 @@ public class DeviceProxy{
     //m_nMsgCount 현재 처리중인 키 이벤트의 갯수
     private static int messageCount;    //m_nMsgCount
 
-    //m_ScanCode 현재 처리중인 키 이벤트 스캔코드를 저장하는 배
+    //m_ScanCode 현재 처리중인 키 이벤트 스캔코드를 저장하는 배열
     private static byte[] scanCode = new byte[KEY_CORD_SIZE];
     private static int bufferCount;
 
