@@ -25,13 +25,13 @@ using UnityEngine;
     //또한 눌렀을때의 문자열 길이, 땠을때의 문자열 길이 저장
     public KeyTable(string aName, long aMakeVal, long aBreakVal, byte aScanKey, byte aOSVirtualKey = 0){
 
-        System.Array.Clear(name.ToCharArray(), 0, name.Length);
-        if (!string.IsNullOrEmpty(aName)){
+        // System.Array.Clear(name.ToCharArray(), 0, name.Length);
+        // if (!string.IsNullOrEmpty(aName)){
 
-            int length = Mathf.Min(aName.Length, name.Length);
-            System.Array.Copy(aName.ToCharArray(), name.ToCharArray(), length);
-        }
-
+        //     int length = Mathf.Min(aName.Length, name.Length);
+        //     System.Array.Copy(aName.ToCharArray(), name.ToCharArray(), length);
+        // }
+        name = aName;
         make_val = aMakeVal;
         break_val = aBreakVal;
         scan_key = aScanKey;
