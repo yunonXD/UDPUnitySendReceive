@@ -5,9 +5,8 @@ using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class UDP_Client : MonoBehaviour
-{
-    private const string serverIP = "192.168.0.115"; // 서버의 IP 주소
+public class UDP_Client : MonoBehaviour{
+    private const string serverIP = "192.168.0.54"; // 서버의 IP 주소
     private const int serverPort = 9020;        // 서버의 포트 번호
     private UdpClient udpClient;
 
@@ -23,14 +22,42 @@ public class UDP_Client : MonoBehaviour
 
     void Update(){
         // 사용자의 입력을 받아서 서버에 전송
-        if (Input.anyKeyDown){ 
-            SendKeyTable(Input.inputString.ToUpper()); // 대문자로 변환      
-        }
+        // if (Input.anyKey){ 
+        //     SendKeyTable(Input.inputString.ToUpper()); // 대문자로 변환      
+        // }
 
-        if(Input.GetKeyDown(KeyCode.F1)){
-            ClientText.text = " ";
+        if(Input.anyKeyDown){
+            string pressedKeys = GetPressedKeys();
+            SendKeyTable(pressedKeys);
         }
     }
+
+    string GetPressedKeys(){
+    StringBuilder pressedKeys = new StringBuilder();
+
+    // F1부터 F12까지 검사
+    for(KeyCode keyCode = KeyCode.F1; keyCode <= KeyCode.F12; keyCode++){
+        if(Input.GetKey(keyCode)){
+            pressedKeys.Append(keyCode.ToString());
+        }
+    }
+
+    // Alt 키 검사
+    if(Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt)){
+        pressedKeys.Append("Alt");
+    }
+
+    // 나머지 키 검사
+    foreach(char c in Input.inputString){
+        if(c != '\0'){
+            pressedKeys.Append(c.ToString().ToUpper());
+        }
+    }
+
+    return pressedKeys.ToString();
+}
+
+    
 
     void OnDestroy(){
         udpClient.Close();
@@ -58,7 +85,7 @@ public class UDP_Client : MonoBehaviour
             keyTable.make_str_len = make_key_string(keyTable.make_str, keyTable.make_val);
             byte[] data = keyTable.make_str;
 
-            await udpClient.SendAsync(data, keyTable.make_str_len);
+            await udpClient.SendAsync(data, keyTable.make_str_len);     //이 부분이 문제였다! 
             //Debug.Log($"Sent make_str for key {keyName}: {ByteArrayToString(data)}");
             ClientText.text = $"Sent make_str for key {keyName}: {ByteArrayToString(data)}";
             keyTable.make_str_len=0;
