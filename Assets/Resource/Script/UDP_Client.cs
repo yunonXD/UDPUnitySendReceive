@@ -2,105 +2,145 @@ using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
-using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class UDPClient : MonoBehaviour{
-
-#region TextField
-    public Text ClientStatusText;
-    public Text Client_TossMessage;
-    public TMP_InputField TextIP;
-#endregion
-
-#region ClientField
-    [SerializeField] private string m_TryConnectIP ="192.168.0.1"; //54
-    [SerializeField] private int m_Port =5555;
+public class UDP_Client : MonoBehaviour{
+    private const string serverIP = "192.168.0.54"; // 서버의 IP 주소
+    private const int serverPort = 9020;        // 서버의 포트 번호
     private UdpClient udpClient;
-    private IPEndPoint serverEndPoint;
-#endregion
 
 
-    private void Start(){
+    [SerializeField] Text ClientState;
+    [SerializeField] Text ClientText;
+
+    void Start(){
         udpClient = new UdpClient();
-        serverEndPoint = new IPEndPoint(IPAddress.Parse(m_TryConnectIP), m_Port);
-        UpdateClientStatus("Client started");
+        init_key_table();
+        ConnectToServer();
     }
 
-    private void Update(){
-        SendMessage();
-        CleanScrean();
-    }
+    void Update(){
+        // 사용자의 입력을 받아서 서버에 전송
+        // if (Input.anyKey){ 
+        //     SendKeyTable(Input.inputString.ToUpper()); // 대문자로 변환      
+        // }
 
-    public void InPut_IP(){
-        string P_ip = TextIP.text;
-        m_TryConnectIP = P_ip;
-    }
-
-    private void SendInputToServer(byte[] virtualInput){
-    udpClient.Send(virtualInput, virtualInput.Length, serverEndPoint);
-    Client_TossMessage.text = "Client sent Message: " + BitConverter.ToString(virtualInput);
-    }
-
-
-    private void UpdateClientStatus(string status){
-        ClientStatusText.text = "Client Status: " + status;
-    }
-
-
-   private void SandInputScanCode(byte[] virtualInput){
-        udpClient.Send(virtualInput, virtualInput.Length, serverEndPoint);
-        Client_TossMessage.text = "Virtual Key Table sent to server." + BitConverter.ToString(virtualInput);
-    }
-
-    //서버에게 전송할 가상 키테이블 생성
-    private byte[] GenerateVirtualKey(char inputkey){
-
-        // 입력한 문자에 해당하는 상수명
-        string constantName = "SCAN_" + inputkey.ToString().ToUpper();
-        Debug.Log(constantName);
-
-        // 상수명에 해당하는 상수가 정의되어 있는지 확인
-        if (Enum.IsDefined(typeof(Scan_Code), constantName)){
-
-            // 상수명에 해당하는 상수 값을 가져오기
-            int scanCodeValue = (int)Enum.Parse(typeof(Scan_Code), constantName);
-
-            return new byte[DeviceProxy.KEY_CORD_SIZE] { (byte)scanCodeValue, 0, 0, 0, 0, 0, 0, 0 };
-        }
-        else{
-            // 상수가 정의되어 있지 않으면 기본값 반환 또는 예외 처리
-            return new byte[DeviceProxy.KEY_CORD_SIZE] { 0, 0, 0, 0, 0, 0, 0, 0 };
+        if(Input.anyKeyDown){
+            string pressedKeys = GetPressedKeys();
+            SendKeyTable(pressedKeys);
         }
     }
 
+    string GetPressedKeys(){
+    StringBuilder pressedKeys = new StringBuilder();
 
-    private void SendMessage(){
-
-        if (Input.anyKeyDown){
-
-            string pressedKey = Input.inputString;
-
-            if (!string.IsNullOrEmpty(pressedKey)){
-                char firstChar = pressedKey[0];
-                byte[] virtualInput = GenerateVirtualKey(firstChar);
-                SandInputScanCode(virtualInput);
-            }
+    // F1부터 F12까지 검사
+    for(KeyCode keyCode = KeyCode.F1; keyCode <= KeyCode.F12; keyCode++){
+        if(Input.GetKey(keyCode)){
+            pressedKeys.Append(keyCode.ToString());
         }
     }
 
+    // Alt 키 검사
+    if(Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt)){
+        pressedKeys.Append("Alt");
+    }
 
-    private void CleanScrean(){
-
-        if(Input.GetKeyDown(KeyCode.F1)){
-            Client_TossMessage.text = "Client sent Mess :";
+    // 나머지 키 검사
+    foreach(char c in Input.inputString){
+        if(c != '\0'){
+            pressedKeys.Append(c.ToString().ToUpper());
         }
     }
 
-    private void OnDestroy(){
+    return pressedKeys.ToString();
+}
 
-        if (udpClient != null)
-            udpClient.Close();
+    
+
+    void OnDestroy(){
+        udpClient.Close();
+    }
+
+    private void ConnectToServer(){
+        try{
+            udpClient.Connect(serverIP, serverPort);
+            Debug.Log("Connected to server");
+        }
+        catch (Exception e){
+            Debug.LogError($"Failed to connect to server: {e.Message}");
+        }
+    }
+
+   private async void SendKeyTable(string keyName){
+    try{
+        // 키 테이블 가져오기
+        if (KeyTables.keyTableDictionary.TryGetValue(keyName, out var keyTable)){
+
+            // 데이터 초기화
+            Array.Clear(keyTable.make_str, 0, keyTable.make_str.Length);
+
+            // keyTable의 make_str을 바이트 배열로 변환하여 서버로 전송
+            keyTable.make_str_len = make_key_string(keyTable.make_str, keyTable.make_val);
+            byte[] data = keyTable.make_str;
+
+            await udpClient.SendAsync(data, keyTable.make_str_len);     //이 부분이 문제였다! 
+            //Debug.Log($"Sent make_str for key {keyName}: {ByteArrayToString(data)}");
+            ClientText.text = $"Sent make_str for key {keyName}: {ByteArrayToString(data)}";
+            keyTable.make_str_len=0;
+        }
+    }
+    catch (Exception e){
+        Debug.LogError($"Failed to send KeyTable data: {e.Message}");
+    }
+}
+
+public void init_key_table()
+{
+    foreach (var keyTable in KeyTables.keyTableDictionary.Values)
+    {
+        keyTable.make_str_len = make_key_string(keyTable.make_str, keyTable.make_val);
+
+        if (keyTable.make_str_len == 0)
+        {
+            throw new Exception("KeyTable initialization error: Length mismatch");
+        }
+
+        keyTable.break_str_len = make_key_string(keyTable.break_str, keyTable.break_val);
+    }
+}
+    int make_key_string(byte[] dest, long input)
+{
+    byte[] temp = new byte[DeviceProxy.KEY_CORD_SIZE];
+    int len = 0;
+
+    BitConverter.GetBytes(input).CopyTo(temp, 0);
+    Array.Clear(dest, 0, DeviceProxy.KEY_CORD_SIZE);
+
+    for (int i = 0; i < DeviceProxy.KEY_CORD_SIZE; i++)
+    {
+        if (temp[i] == 0x00) break;
+
+        dest[i] = temp[i];
+        len++;
+    }
+
+    if (len == 0) return 0;
+
+    int j = 0;
+    for (int i = len; i > 0; i--)
+    {
+        dest[j] = temp[i - 1];
+        j++;
+    }
+
+    return len;
+}
+
+    // 바이트 배열을 문자열로 변환하는 헬퍼 함수
+    string ByteArrayToString(byte[] byteArray)
+    {
+        return Encoding.ASCII.GetString(byteArray);
     }
 }
