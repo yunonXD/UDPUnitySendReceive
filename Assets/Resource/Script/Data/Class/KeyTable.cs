@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using UnityEngine;
-using System;
 
     public class KeyTable{
     public string name = new string(' ', 20);
@@ -26,13 +25,12 @@ using System;
     //또한 눌렀을때의 문자열 길이, 땠을때의 문자열 길이 저장
     public KeyTable(string aName, long aMakeVal, long aBreakVal, byte aScanKey, byte aOSVirtualKey = 0){
 
-        // System.Array.Clear(name.ToCharArray(), 0, name.Length);
-        // if (!string.IsNullOrEmpty(aName)){
+        System.Array.Clear(name.ToCharArray(), 0, name.Length);
+        if (!string.IsNullOrEmpty(aName)){
 
-        //     int length = Mathf.Min(aName.Length, name.Length);
-        //     System.Array.Copy(aName.ToCharArray(), name.ToCharArray(), length);
-        // }
-        name = aName;
+            int length = Mathf.Min(aName.Length, name.Length);
+            System.Array.Copy(aName.ToCharArray(), name.ToCharArray(), length);
+        }
 
         make_val = aMakeVal;
         break_val = aBreakVal;
@@ -93,12 +91,10 @@ public static class KeyTables{
             new KeyTable("`", 0x0E, 0xF00E, Scan_Code.SCAN_APOSTROPHE, 222)
         };
 
-        // foreach (var keyTable in keyTables)
-        // {
-        //     keyTableDictionary[keyTable.name] = keyTable;
-        //     Debug.Log(string.Format("KeyTable Initialized: {0}, {1}, {2}, {3}, {4}",
-        //     keyTable.name, keyTable.make_val, keyTable.break_val, keyTable.scan_key, keyTable.os_vk_key));
-        // }
+        foreach (var keyTable in keyTables)
+        {
+            keyTableDictionary[keyTable.name] = keyTable;
+        }
     }
 
     public static string FindKeyStr(string name)

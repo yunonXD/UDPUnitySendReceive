@@ -3,16 +3,12 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using UnityEngine;
-using UnityEngine.UI;
 
-public class UDP_Client : MonoBehaviour{
+public class UDP_Client : MonoBehaviour
+{
     private const string serverIP = "127.0.0.1"; // 서버의 IP 주소
     private const int serverPort = 12345;        // 서버의 포트 번호
     private UdpClient udpClient;
-
-
-    [SerializeField] Text ClientState;
-    [SerializeField] Text ClientText;
 
     void Start(){
         udpClient = new UdpClient();
@@ -34,7 +30,7 @@ public class UDP_Client : MonoBehaviour{
     private void ConnectToServer(){
         try{
             udpClient.Connect(serverIP, serverPort);
-            ClientState.text = "Connected to server";
+            Debug.Log("Connected to server");
         }
         catch (Exception e){
             Debug.LogError($"Failed to connect to server: {e.Message}");
@@ -46,15 +42,11 @@ public class UDP_Client : MonoBehaviour{
         try{
             // 키 테이블 가져오기
             if (KeyTables.keyTableDictionary.TryGetValue(keyName, out var keyTable)){   
-
-                byte[] data = keyTable.make_str;                // keyTable의 make_str을 바이트 배열로 변환하여 서버로 전송
-                ClientText.text = $"Trying to send make_str for key {keyName}: {ByteArrayToString(data)}";
-                await udpClient.SendAsync(data, data.Length);
+            // keyTable의 make_str을 바이트 배열로 변환하여 서버로 전송
+            byte[] data = keyTable.make_str;
+            await udpClient.SendAsync(data, data.Length);
 
             Debug.Log($"Sent make_str for key {keyName}: {ByteArrayToString(data)}");
-            }
-            else{
-                Debug.Log($"Sent make_str for key {keyName}");
             }
     
         }
@@ -64,10 +56,10 @@ public class UDP_Client : MonoBehaviour{
         }
     }
 
-    public void init_key_table(){
-
-        foreach (var keyTable in KeyTables.keyTableDictionary.Values){
-
+    public void init_key_table()
+    {
+        foreach (var keyTable in KeyTables.keyTableDictionary.Values)
+        {
             keyTable.make_str_len = make_key_string(keyTable.make_str, keyTable.make_val);
 
             if (keyTable.make_str_len == 0)
@@ -77,15 +69,16 @@ public class UDP_Client : MonoBehaviour{
         }
     }
 
-    int make_key_string(byte[] dest, long input){
-
+    int make_key_string(byte[] dest, long input)
+    {
         byte[] temp = new byte[DeviceProxy.KEY_CORD_SIZE];
         int len = 0;
 
         BitConverter.GetBytes(input).CopyTo(temp, 0);
         Array.Clear(dest, 0, DeviceProxy.KEY_CORD_SIZE);
 
-        for (int i = 0; i < DeviceProxy.KEY_CORD_SIZE; i++){
+        for (int i = 0; i < DeviceProxy.KEY_CORD_SIZE; i++)
+        {
             if (temp[i] == 0x00) break;
 
             dest[i] = temp[i];
@@ -95,7 +88,8 @@ public class UDP_Client : MonoBehaviour{
         if (len == 0) return 0;
 
         int j = 0;
-        for (int i = len; i > 0; i--){
+        for (int i = len; i > 0; i--)
+        {
             dest[j] = temp[i - 1];
             j++;
         }
@@ -104,7 +98,8 @@ public class UDP_Client : MonoBehaviour{
     }
 
     // 바이트 배열을 문자열로 변환하는 헬퍼 함수
-    string ByteArrayToString(byte[] byteArray){
+    string ByteArrayToString(byte[] byteArray)
+    {
         return Encoding.ASCII.GetString(byteArray);
     }
 }
