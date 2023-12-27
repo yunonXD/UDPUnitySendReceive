@@ -4,20 +4,9 @@ using System;
 
 public class KeyTableManager : MonoBehaviour{
 
-    //m_nMsgCount 현재 처리중인 키 이벤트의 갯수
-    static private int m_nMsgCount; 
-
-    //m_ScanCode 현재 처리중인 키 이벤트 스캔코드를 저장하는 배열
-    static private byte[] m_ScanCode = new byte[DeviceProxy.KEY_CORD_SIZE];
-
-    //buff 키 이벤트 저장할 공간
-    static private byte[] buff = new byte[DeviceProxy.MAX_LINE];
-    static private int buff_count;
-    private int m_iHead, m_iTail;       //큐를 사용해서 저장, 가져오므로 해드테일 선언
-
     // 새로운 맵 및 키 이벤트 리스트 선언
     static private PzMap<int, bool> key_events = new PzMap<int, bool>();
-    private const int KEY_TABLE_SIZE = 35;  //키 테이블 사이즈 (추가시 수정 요망)
+    private const int KEY_TABLE_SIZE = 113;  //키 테이블 사이즈 (추가시 수정 요망)
     private Queue<byte> messageQueue = new Queue<byte>();   // 데이터 넣기위한 큐
 
 
@@ -46,30 +35,29 @@ public class KeyTableManager : MonoBehaviour{
     void ProcessQueue(){
         while (messageQueue.Count > 0){
             messageQueue.TryDequeue(out byte scanCode);
-            m_ScanCode[m_nMsgCount] = scanCode;
+            DeviceProxy.ScanCode[DeviceProxy.MessageCount] = scanCode;
             if (!Check())
-                m_nMsgCount++;
+                DeviceProxy.MessageCount++;
         }
     }
 
     // 버퍼를 갱신하는 함수
     static public void replace_buff(){
-        Array.Copy(buff, m_nMsgCount, buff, 0, DeviceProxy.MAX_LINE - m_nMsgCount);
-        Array.Clear(m_ScanCode, 0, DeviceProxy.KEY_CORD_SIZE);
-        buff_count -= m_nMsgCount;
-        m_nMsgCount = 0;
+        Array.Copy(DeviceProxy.Buffer, DeviceProxy.MessageCount, DeviceProxy.Buffer, 0, DeviceProxy.MAX_LINE - DeviceProxy.MessageCount);
+        Array.Clear(DeviceProxy.ScanCode, 0, DeviceProxy.KEY_CORD_SIZE);
+        DeviceProxy.BufferCount -= DeviceProxy.MessageCount;
+        DeviceProxy.MessageCount = 0;
     }
 
    // 특정 키, 코드 패턴과 입력된 데이터를 비교하여 해당되는 키 이벤트를 처리하는 함수
     public static bool Check(){
     for (int j = 0; j < KEY_TABLE_SIZE; ++j){
-        if (CompareArrays(KeyTables.keyTableDictionary[KeyTables.FindKeyStr(j.ToString())].make_str, m_ScanCode,
+        if (CompareArrays(KeyTables.keyTableDictionary[KeyTables.FindKeyStr(j.ToString())].make_str, DeviceProxy.ScanCode,
              KeyTables.keyTableDictionary[KeyTables.FindKeyStr(j.ToString())].make_str_len)){
 
             set_key_event(j, true);
-            m_nMsgCount = 0;
+            DeviceProxy.MessageCount = 0;
 
-            // 큐 없으면 따로 작성해둔 버퍼로 작동함.
             #if _QUEUE_
             Debug.Log("using queue Clear");
             Array.Clear(m_ScanCode, 0, DeviceProxy.KEY_CORD_SIZE);
@@ -80,11 +68,10 @@ public class KeyTableManager : MonoBehaviour{
             return true;
             #endif
         }
-        else if (CompareArrays(KeyTables.keyTableDictionary[KeyTables.FindKeyStr(j.ToString())].break_str, m_ScanCode, KeyTables.keyTableDictionary[KeyTables.FindKeyStr(j.ToString())].break_str_len)){
-            m_nMsgCount = 0;
+        else if (CompareArrays(KeyTables.keyTableDictionary[KeyTables.FindKeyStr(j.ToString())].break_str, DeviceProxy.ScanCode, KeyTables.keyTableDictionary[KeyTables.FindKeyStr(j.ToString())].break_str_len)){
+            DeviceProxy.MessageCount = 0;
             set_key_event(j, false);
 
-            // 큐 없으면 따로 작성해둔 버퍼로 작동함.
             #if _QUEUE_
             Debug.Log("using queue Clear");
             Array.Clear(m_ScanCode, 0, DeviceProxy.KEY_CORD_SIZE);
@@ -114,19 +101,20 @@ public class KeyTableManager : MonoBehaviour{
         return false;
     }
     #else
-    if (m_nMsgCount == DeviceProxy.KEY_CORD_SIZE){
+    if (DeviceProxy.MessageCount == DeviceProxy.KEY_CORD_SIZE){
         Debug.Log("KEYCODE MISMATCH");
 
-        buff_count = m_nMsgCount = 0;
-        Array.Clear(buff, 0, DeviceProxy.MAX_LINE);
-        Array.Clear(m_ScanCode, 0, DeviceProxy.KEY_CORD_SIZE);
+        DeviceProxy.BufferCount = DeviceProxy.MessageCount = 0;
+        Array.Clear(DeviceProxy.Buffer, 0, DeviceProxy.MAX_LINE);
+        Array.Clear(DeviceProxy.ScanCode, 0, DeviceProxy.KEY_CORD_SIZE);
 
         return true;
     }
     #endif
 
     return false;
-}
+    }
+
 
 
     // 배열 비교 함수   arr1 과 arr2 의 길이가 같다면 true
@@ -139,17 +127,18 @@ public class KeyTableManager : MonoBehaviour{
         return true;
     }
 
-    void Clear(){
 
-        m_iHead = m_iTail = 0;
-        Array.Clear(buff, 0, DeviceProxy.MAX_LINE);
-        Array.Clear(m_ScanCode, 0, DeviceProxy.KEY_CORD_SIZE);
-        m_nMsgCount = 0;
+    public static void Clear(){
+
+        DeviceProxy.Head = DeviceProxy.Tail = 0;
+        Array.Clear(DeviceProxy.Buffer, 0, DeviceProxy.MAX_LINE);
+        Array.Clear(DeviceProxy.ScanCode, 0, DeviceProxy.KEY_CORD_SIZE);
+        DeviceProxy.MessageCount = 0;
     }
 
 
     // 키테이블 초기화
-    public void init_key_table(){
+    public static void init_key_table(){
     foreach (var keyTable in KeyTables.keyTableDictionary.Values){
         keyTable.make_str_len = make_key_string(keyTable.make_str, keyTable.make_val);
 
@@ -161,7 +150,7 @@ public class KeyTableManager : MonoBehaviour{
     }
 
     // 키테이블 초기화 (키의 문자열 및 길이 설정)
-    int make_key_string(byte[] dest, long input){
+    public static int  make_key_string(byte[] dest, long input){
 
         byte[] temp = new byte[DeviceProxy.KEY_CORD_SIZE];
         int len = 0;
@@ -196,7 +185,7 @@ public class KeyTableManager : MonoBehaviour{
     //buff 크기 반환
     private int GetSize(){
 
-        return (m_iHead - m_iTail + DeviceProxy.MAX_LINE) % DeviceProxy.MAX_LINE;
+        return (DeviceProxy.Head - DeviceProxy.Tail + DeviceProxy.MAX_LINE) % DeviceProxy.MAX_LINE;
     }
 
     //buff 에 byte 추가 (여유 공간이 있다면)
@@ -205,8 +194,8 @@ public class KeyTableManager : MonoBehaviour{
         if (GetSize() == (DeviceProxy.MAX_LINE - 1))
             return false;
 
-        buff[m_iHead++] = b;
-        m_iHead %= DeviceProxy.MAX_LINE;
+        DeviceProxy.Buffer[DeviceProxy.Head++] = b;
+        DeviceProxy.Head %= DeviceProxy.MAX_LINE;
 
         return true;
     }
@@ -217,8 +206,8 @@ public class KeyTableManager : MonoBehaviour{
         if (GetSize() == 0)
             return false;
 
-        pb = buff[m_iTail++];
-        m_iTail %= DeviceProxy.MAX_LINE;
+        pb = DeviceProxy.Buffer[DeviceProxy.Tail++];
+        DeviceProxy.Tail %= DeviceProxy.MAX_LINE;
 
         return true;
     }

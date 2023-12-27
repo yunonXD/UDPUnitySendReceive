@@ -42,10 +42,10 @@ public static class KeyTables{
         InitializeKeyTables();
     }
 
-    static void InitializeKeyTables()
-    {
-        var keyTables = new KeyTable[]
-        {
+    static void InitializeKeyTables(){
+
+        var keyTables = new KeyTable[]{
+            
             new KeyTable("A", 0x1C, 0xF01C, Scan_Code.SCAN_A, (byte)'A'),
             new KeyTable("B", 0x32, 0xF032, Scan_Code.SCAN_B, (byte)'B'),
             new KeyTable("C", 0x21, 0xF021, Scan_Code.SCAN_C, (byte)'C'),
@@ -156,6 +156,7 @@ public static class KeyTables{
 	        new KeyTable("cbr", 0xA7, 0xF0A7, Scan_Code.SCAN_CBR),
 	        new KeyTable("enemy", 0xA8, 0xF0A8, Scan_Code.SCAN_ENEMY),
 	        new KeyTable("nextw", 0xAF, 0xF0AF, Scan_Code.SCAN_NEXTW),
+            //
 	        new KeyTable("4wayup", 0xC5, 0xF0C5, Scan_Code.SCAN_4WAYUP, VirsualKeyCode.VK_UP),
 	        new KeyTable("4waydown", 0xC6, 0xF0C6, Scan_Code.SCAN_4WAYDOWN, VirsualKeyCode.VK_DOWN),
 	        new KeyTable("4wayleft", 0xC7, 0xF0C7, Scan_Code.SCAN_4WAYLEFT, VirsualKeyCode.VK_LEFT),
@@ -163,16 +164,13 @@ public static class KeyTables{
 	        new KeyTable("change", 0x90, 0xF090, Scan_Code.SCAN_CHANGE, VirsualKeyCode.VK_HANGUL)
         };
 
-        foreach (var keyTable in keyTables)
-        {
+        foreach (var keyTable in keyTables){
             keyTableDictionary[keyTable.name] = keyTable;
         }
     }
 
-    public static string FindKeyStr(string name)
-    {
-        if (keyTableDictionary.TryGetValue(name, out var keyTable))
-        {
+    public static string FindKeyStr(string name){
+        if (keyTableDictionary.TryGetValue(name, out var keyTable)){
             return keyTable.name;
         }
 

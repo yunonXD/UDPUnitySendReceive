@@ -1,67 +1,75 @@
-// using System;
-// using System.Net;
-// using System.Net.Sockets;
-// using System.Text;
-// using UnityEngine;
-// using UnityEngine.UI;
+using System;
+using System.Net;
+using System.Net.Sockets;
+using System.Text;
+using Unity.VisualScripting;
+using UnityEngine;
+using UnityEngine.UI;
 
-// public class UDPServer : MonoBehaviour{
-//     public Text serverStatusText;
-//     public Text StateText;
-//     public Text receivedMessageText;
+public class UDPServer : MonoBehaviour{
+    public Text serverStatusText;
+    public Text StateText;
+    public Text receivedMessageText;
 
-//     [SerializeField] private int m_Port =5555;
+    [SerializeField] private int m_Port =9020;
 
-//     private UdpClient udpServer;
-//     private IPEndPoint remoteEndPoint;
+    private UdpClient udpServer;
+    private IPEndPoint remoteEndPoint;
 
-//     private void Start(){
-//         udpServer = new UdpClient(m_Port);
-//         remoteEndPoint = new IPEndPoint(IPAddress.Any, 0);
+    private void Start(){
+        KeyTableManager.init_key_table();
+        KeyTableManager.Clear();
 
-//         UpdateServerStatus("Server started on port :" + m_Port);
-//     }
+        udpServer = new UdpClient(m_Port);
+        remoteEndPoint = new IPEndPoint(IPAddress.Any, 0);
 
-//     private void Update(){
-//         try{
+        UpdateServerStatus("Server started on port :" + m_Port);
+    }
 
-//             if (udpServer.Available > 0){
+    private void Update(){
+        try{
 
-//                 byte[] data = udpServer.Receive(ref remoteEndPoint);    //클라이언트에게 받아온 데이터
+            if (udpServer.Available > 0){
 
-//                 DeviceProxy.ScanCode = data;        //를 스캔코드에 쏘옥
+                byte[] data = udpServer.Receive(ref remoteEndPoint);    //클라이언트에게 받아온 데이터
+                DeviceProxy.ScanCode = data;
+                Debug.Log(DeviceProxy.ScanCode);
 
-//                 ScanCodeTester();
-//             }
-//         }
-//         catch (Exception e){
+                bool keyIntegrity = KeyTableManager.Check();
 
-//             Debug.LogError("Error receiving data: " + e.Message);
-//         }
-//     }
+                StateText.text = keyIntegrity ? "Key Table Integrity passed gid gud :) "  : " KeyCode Table Integrity Failed :( ";
+                receivedMessageText.text = "Scancode: " + BitConverter.ToString(DeviceProxy.ScanCode);
+    
+            }
+        }
+        catch (Exception e){
 
-//     public void ScanCodeTester(){       //무결성 검사
+            Debug.LogError("Error receiving data: " + e.Message);
+        }
+    }
 
-//         if (KeyTableManager.Check()){
+    private void ReceiveSTRdata(){
+        try{
+            
+            
 
-//             StateText.text = "Key Table integrity check passed.";
-//             receivedMessageText.text = "Scancode: " + BitConverter.ToString(DeviceProxy.ScanCode);
-//         }
-//         else{
-//             receivedMessageText.text = "Key Table integrity check failed!";
-//         }
-//     }
 
-//     private void UpdateServerStatus(string status){
-//         serverStatusText.text = "Server Status: " + status;
-//     }
+        }
+        catch(Exception e){
+            Debug.LogError($"Failed to check table with input make_str : {e.Message}" );
+        }
+    }
 
-//     private void UpdateReceivedMessage(string message){
-//         receivedMessageText.text = "Received Message: " + message;
-//     }
+    private void UpdateServerStatus(string status){
+        serverStatusText.text = "Server Status: " + status;
+    }
 
-//     private void OnDestroy(){
-//         if (udpServer != null)
-//             udpServer.Close();
-//     }
-// }
+    private void UpdateReceivedMessage(string message){
+        receivedMessageText.text = "Received Message: " + message;
+    }
+
+    private void OnDestroy(){
+        if (udpServer != null)
+            udpServer.Close();
+    }
+}

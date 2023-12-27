@@ -2,9 +2,15 @@ public class DeviceProxy{
     public const int KEY_CORD_SIZE = 8;
     public const int MAX_LINE = 2024;
 
-    private static int messageCount;
+    //m_nMsgCount 현재 처리중인 키 이벤트의 갯수
+    private static int messageCount;    //m_nMsgCount
+
+    //m_ScanCode 현재 처리중인 키 이벤트 스캔코드를 저장하는 배
     private static byte[] scanCode = new byte[KEY_CORD_SIZE];
-    private static uint bufferCount;
+    private static int bufferCount;
+
+
+    //buff 키 이벤트 저장할 공간
     private static byte[] buffer = new byte[MAX_LINE];
     private static int head, tail;
 
@@ -18,7 +24,7 @@ public class DeviceProxy{
         set { scanCode = value; }
     }
 
-    public static uint BufferCount{
+    public static int BufferCount{
         get { return bufferCount; }
         set { bufferCount = value; }
     }
