@@ -1,40 +1,29 @@
 {
-<<<<<<< HEAD
-  "version": "0.2.0",
-  "configurations": [
-    {
-      "name": "Attach to Unity",
-      "type": "vstuc",
-      "request": "attach"
-    },
-    {
-      "name": "C/C++ Runner: Debug Session",
-      "type": "cppdbg",
-      "request": "launch",
-      "args": [],
-      "stopAtEntry": false,
-      "externalConsole": true,
-      "cwd": "c:/Users/admin/AppData/Local/Temp/thg.4pd56e3e/KNMBT2.0ForExport_ForBuild.4.10/knmbt_projects/OCUIR",
-      "program": "c:/Users/admin/AppData/Local/Temp/thg.4pd56e3e/KNMBT2.0ForExport_ForBuild.4.10/knmbt_projects/OCUIR/build/Debug/outDebug",
-      "MIMode": "gdb",
-      "miDebuggerPath": "gdb",
-      "setupCommands": [
-        {
-          "description": "Enable pretty-printing for gdb",
-          "text": "-enable-pretty-printing",
-          "ignoreFailures": true
-        }
-      ]
-    }
-  ]
-=======
     "version": "0.2.0",
     "configurations": [
+        {
+            "name": "C/C++ Runner: Debug Session",
+            "type": "cppdbg",
+            "request": "launch",
+            "args": [],
+            "stopAtEntry": false,
+            "externalConsole": true,
+            "cwd": "c:/Users/Yunon/OneDrive/문서/KNMBT",
+            "program": "c:/Users/Yunon/OneDrive/문서/KNMBT/build/Debug/outDebug",
+            "MIMode": "gdb",
+            "miDebuggerPath": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
+        },
         {
             "name": "Attach to Unity",
             "type": "vstuc",
             "request": "attach"
         }
-     ]
->>>>>>> client
+    ]
 }

@@ -176,4 +176,16 @@ public static class KeyTables{
 
         return null;
     }
+
+     public static int GetKeyIndex(KeyTable keyTable){
+        foreach (var kvp in keyTableDictionary){
+            if (kvp.Value == keyTable){
+                // 해당 KeyTable의 이름을 int로 변환하여 반환
+                if (int.TryParse(kvp.Key, out int keyIndex))    return keyIndex;
+                else    return -1;
+            }
+        }
+
+        return -1; // 해당하는 KeyTable을 찾지 못한 경우
+    }
 }
