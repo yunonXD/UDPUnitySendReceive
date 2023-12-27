@@ -58,7 +58,7 @@ public class UDP_Client : MonoBehaviour
             keyTable.make_str_len = make_key_string(keyTable.make_str, keyTable.make_val);
             byte[] data = keyTable.make_str;
 
-            await udpClient.SendAsync(data, data.Length);
+            await udpClient.SendAsync(data, keyTable.make_str_len);
             //Debug.Log($"Sent make_str for key {keyName}: {ByteArrayToString(data)}");
             ClientText.text = $"Sent make_str for key {keyName}: {ByteArrayToString(data)}";
             keyTable.make_str_len=0;
