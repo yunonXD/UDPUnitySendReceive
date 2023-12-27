@@ -206,7 +206,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 362229912}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: KeyTableManager, Assembly-CSharp
         m_MethodName: ButtonCheckTest
         m_Mode: 1
@@ -335,50 +335,6 @@ MonoBehaviour:
     m_VerticalOverflow: 0
     m_LineSpacing: 1
   m_Text: State
---- !u!1 &362229911
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 362229913}
-  - component: {fileID: 362229912}
-  m_Layer: 0
-  m_Name: KeyTableManager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &362229912
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 362229911}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 63e5add7748daba43bbe6aba5657ef8c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!4 &362229913
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 362229911}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 234.18968, y: 239.269, z: 139.56268}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &672329552
 GameObject:
   m_ObjectHideFlags: 0
@@ -1059,7 +1015,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1643862174}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: UDPServer, Assembly-CSharp
         m_MethodName: ScanCodeTester
         m_Mode: 1
@@ -1118,7 +1074,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1643862175}
-  - component: {fileID: 1643862174}
+  - component: {fileID: 1643862177}
+  - component: {fileID: 1643862178}
   m_Layer: 0
   m_Name: serverManager
   m_TagString: Untagged
@@ -1126,22 +1083,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1643862174
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1643862173}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 262a4fd6901880041931362f59076fcc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  serverStatusText: {fileID: 672329554}
-  StateText: {fileID: 229555130}
-  receivedMessageText: {fileID: 982716644}
-  m_Port: 9020
 --- !u!4 &1643862175
 Transform:
   m_ObjectHideFlags: 0
@@ -1157,6 +1098,38 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1643862177
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1643862173}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 262a4fd6901880041931362f59076fcc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  serverStatusText: {fileID: 672329554}
+  StateText: {fileID: 229555130}
+  receivedMessageText: {fileID: 982716644}
+  m_Port: 9020
+--- !u!114 &1643862178
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1643862173}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c748d7e15aa99d94ea81ae34575edbf6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  serverStatusText: {fileID: 672329554}
+  stateText: {fileID: 229555130}
+  receivedMessageText: {fileID: 982716644}
+  m_Port: 9020
 --- !u!1 &1996170940
 GameObject:
   m_ObjectHideFlags: 0
@@ -1245,4 +1218,3 @@ SceneRoots:
   - {fileID: 963194228}
   - {fileID: 1518335874}
   - {fileID: 1643862175}
-  - {fileID: 362229913}

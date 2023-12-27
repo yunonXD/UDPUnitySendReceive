@@ -27,20 +27,9 @@ public class UDPServer : MonoBehaviour{
     }
 
     private void Update(){
+
         try{
-
-            if (udpServer.Available > 0){
-
-                byte[] data = udpServer.Receive(ref remoteEndPoint);    //클라이언트에게 받아온 데이터
-                DeviceProxy.ScanCode = data;
-                Debug.Log(DeviceProxy.ScanCode);
-
-                bool keyIntegrity = KeyTableManager.Check();
-
-                StateText.text = keyIntegrity ? "Key Table Integrity passed gid gud :) "  : " KeyCode Table Integrity Failed :( ";
-                receivedMessageText.text = "Scancode: " + BitConverter.ToString(DeviceProxy.ScanCode);
-    
-            }
+            CheckVerify();
         }
         catch (Exception e){
 
@@ -48,17 +37,41 @@ public class UDPServer : MonoBehaviour{
         }
     }
 
-    private void ReceiveSTRdata(){
-        try{
-            
-            
+    private async void CheckVerify(){
 
+        if (udpServer.Available > 0){
 
-        }
-        catch(Exception e){
-            Debug.LogError($"Failed to check table with input make_str : {e.Message}" );
-        }
+            UdpReceiveResult result = await udpServer.ReceiveAsync();
+            //byte[] data = udpServer.Receive(ref remoteEndPoint);
+            //DeviceProxy.ScanCode = data;
+
+            byte[] data = result.Buffer;            // 수신된 데이터 버퍼
+            int dataLength = result.Buffer.Length;  // 수신된 데이터의 길이를 얻음
+            Debug.Log(data.Length);
+            DeviceProxy.ScanCode = data;
+
+            //Debug.Log(BitConverter.ToString(data));
+            //Debug.Log($"Data Length: {dataLength}");
+            //Debug.Log(Encoding.ASCII.GetString(data));
+
+            KeyTableManager.set_dev_data();
+
+            bool keyIntegrity = KeyTableManager.Check();
+
+            if (keyIntegrity) {
+                StateText.text = "Key Table Integrity passed gid gud :) ";
+                receivedMessageText.text = "Scancode: " + BitConverter.ToString(DeviceProxy.ScanCode);
+                }
+            else {
+                StateText.text = "KeyCode Table Integrity Failed :( ";
+                receivedMessageText.text = "Invalid Scancode received!";
+                }
+    
+            }
+        else
+                StateText.text = "State" + " : ...";
     }
+
 
     private void UpdateServerStatus(string status){
         serverStatusText.text = "Server Status: " + status;
