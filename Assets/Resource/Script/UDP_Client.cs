@@ -6,8 +6,8 @@ using UnityEngine;
 
 public class UDP_Client : MonoBehaviour
 {
-    private const string serverIP = "127.0.0.1"; // 서버의 IP 주소
-    private const int serverPort = 12345;        // 서버의 포트 번호
+    private const string serverIP = "192.168.0.115"; // 서버의 IP 주소
+    private const int serverPort = 9020;        // 서버의 포트 번호
     private UdpClient udpClient;
 
     void Start(){
