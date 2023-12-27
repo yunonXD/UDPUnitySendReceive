@@ -4,9 +4,9 @@ using System.Net.Sockets;
 using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
-
+//192.168.0.54
 public class UDP_Client : MonoBehaviour{
-    private const string serverIP = "192.168.0.54"; // 서버의 IP 주소
+    private const string serverIP = "210.97.122.134"; // 서버의 IP 주소
     private const int serverPort = 9020;        // 서버의 포트 번호
     private UdpClient udpClient;
     bool wasAnyKeyPreviouslyPressed = false;        //키 입력 여부 false=눌림 true=들림
