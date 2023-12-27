@@ -96,6 +96,9 @@ public class UDP_Client : MonoBehaviour{
     }
 }
 
+
+//keytable 의 make_str ,  break_str , 에 대한 길이(make_str_len 및 break_str_len)
+//를 계산하고 설정
 public void init_key_table()
 {
     foreach (var keyTable in KeyTables.keyTableDictionary.Values)
