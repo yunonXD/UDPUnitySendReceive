@@ -66,7 +66,6 @@ public class UDP_Client : MonoBehaviour{
     private void ConnectToServer(){
         try{
             udpClient.Connect(serverIP, serverPort);
-            Debug.Log("Connected to server");
         }
         catch (Exception e){
             Debug.LogError($"Failed to connect to server: {e.Message}");
