@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 using System;
 
 public class KeyTableManager : MonoBehaviour{
@@ -17,7 +18,7 @@ public class KeyTableManager : MonoBehaviour{
     // 새로운 맵 및 키 이벤트 리스트 선언
     static private PzMap<int, bool> key_events = new PzMap<int, bool>();
     private const int KEY_TABLE_SIZE = 35;  //키 테이블 사이즈 (추가시 수정 요망)
-
+    private Queue<byte> messageQueue = new Queue<byte>();   // 데이터 넣기위한 큐
 
 
     void Start(){
@@ -32,28 +33,23 @@ public class KeyTableManager : MonoBehaviour{
     // 키 입력 데이터 처리
     void set_dev_data(){
         // using queue
-        #if _QUEUE_
         while (GetSize() > 0){
-            GetByte(ref m_ScanCode[m_nMsgCount]);
-            if (!check())
+            byte scanCode =0;
+            if (GetByte(ref scanCode)){
+                messageQueue.Enqueue(scanCode);
+            }
+        }
+        ProcessQueue();
+    }
+
+    // 큐에 있는 메시지 처리    
+    void ProcessQueue(){
+        while (messageQueue.Count > 0){
+            messageQueue.TryDequeue(out byte scanCode);
+            m_ScanCode[m_nMsgCount] = scanCode;
+            if (!Check())
                 m_nMsgCount++;
         }
-        #else
-        m_nMsgCount = 1;
-
-        while (buff_count > 0){
-            if (buff_count < m_nMsgCount){
-                buff_count = m_nMsgCount = 0;
-                Array.Clear(buff, 0, DeviceProxy.MAX_LINE);
-                Array.Clear(m_ScanCode, 0, DeviceProxy.KEY_CORD_SIZE);
-                return;
-            }
-
-            Array.Copy(buff, m_ScanCode, m_nMsgCount);
-            //Check();
-            m_nMsgCount++;
-        }
-        #endif
     }
 
     // 버퍼를 갱신하는 함수
@@ -64,71 +60,74 @@ public class KeyTableManager : MonoBehaviour{
         m_nMsgCount = 0;
     }
 
-    // 특정 키, 코드 패턴과 입력된 데이터를 비교하여 해당되는 키 이벤트를 처리하는 함수
-    // public static bool Check(){
-    //     for (int j = 0; j < KEY_TABLE_SIZE; ++j){
-    //         if (CompareArrays(KeyTables.key_tables[j].make_str, m_ScanCode, KeyTables.key_tables[j].make_str_len)){
-    //             set_key_event(j, true);
-    //             m_nMsgCount = 0;
+   // 특정 키, 코드 패턴과 입력된 데이터를 비교하여 해당되는 키 이벤트를 처리하는 함수
+    public static bool Check(){
+    for (int j = 0; j < KEY_TABLE_SIZE; ++j){
+        if (CompareArrays(KeyTables.keyTableDictionary[KeyTables.FindKeyStr(j.ToString())].make_str, m_ScanCode,
+             KeyTables.keyTableDictionary[KeyTables.FindKeyStr(j.ToString())].make_str_len)){
 
-    //             // 큐 없으면 따로 작성해둔 버퍼로 작동함.
-    //             #if _QUEUE_
-    //             Debug.Log("using queue Clear");
-    //             Array.Clear(m_ScanCode, 0, DeviceProxy.KEY_CORD_SIZE);
-    //             return true;
-    //             #else
-    //             Debug.Log("using replace_buff");
-    //             replace_buff();
-    //             return true;
-    //             #endif
-    //         }
-    //         else if (CompareArrays(KeyTables.key_tables[j].break_str, m_ScanCode, KeyTables.key_tables[j].break_str_len)){
-    //             m_nMsgCount = 0;
-    //             set_key_event(j, false);
+            set_key_event(j, true);
+            m_nMsgCount = 0;
 
-    //             // 큐 없으면 따로 작성해둔 버퍼로 작동함.
-    //             #if _QUEUE_
-    //             Debug.Log("using queue Clear");
-    //             Array.Clear(m_ScanCode, 0, DeviceProxy.KEY_CORD_SIZE);
-    //             return true;
-    //             #else
-    //             Debug.Log("using replace_buff");
-    //             replace_buff();
-    //             return true;
-    //             #endif
-    //         }   
-    //     }
+            // 큐 없으면 따로 작성해둔 버퍼로 작동함.
+            #if _QUEUE_
+            Debug.Log("using queue Clear");
+            Array.Clear(m_ScanCode, 0, DeviceProxy.KEY_CORD_SIZE);
+            return true;
+            #else
+            Debug.Log("using replace_buff");
+            replace_buff();
+            return true;
+            #endif
+        }
+        else if (CompareArrays(KeyTables.keyTableDictionary[KeyTables.FindKeyStr(j.ToString())].break_str, m_ScanCode, KeyTables.keyTableDictionary[KeyTables.FindKeyStr(j.ToString())].break_str_len)){
+            m_nMsgCount = 0;
+            set_key_event(j, false);
 
-    //     // 큐 사용하는데 없으면 false 리턴
-    //     #if _QUEUE_
-    //     Debug.Log("using queue. m_nMsgCount == DeviceProxy.KEY_CORD_SIZE - ? part(line number 104)");
-        
-    //     if (m_nMsgCount == DeviceProxy.KEY_CORD_SIZE - 1){
-    //         Debug.Log("KEYCODE MISMATCH");
+            // 큐 없으면 따로 작성해둔 버퍼로 작동함.
+            #if _QUEUE_
+            Debug.Log("using queue Clear");
+            Array.Clear(m_ScanCode, 0, DeviceProxy.KEY_CORD_SIZE);
+            return true;
+            #else
+            Debug.Log("using replace_buff");
+            replace_buff();
+            return true;
+            #endif
+        }   
+    }
 
-    //         byte[] tmp_code = new byte[DeviceProxy.KEY_CORD_SIZE];
-    //         Array.Copy(m_ScanCode, tmp_code, DeviceProxy.KEY_CORD_SIZE);
-    //         Array.Copy(tmp_code, 1, m_ScanCode, 0, DeviceProxy.KEY_CORD_SIZE - 1);
-    //         m_ScanCode[DeviceProxy.KEY_CORD_SIZE - 1] = 0;
+    // 큐 사용하는데 없으면 false 리턴
+    #if _QUEUE_
+    Debug.Log("using queue. m_nMsgCount == DeviceProxy.KEY_CORD_SIZE - ? part(line number 104)");
+    
+    if (m_nMsgCount == DeviceProxy.KEY_CORD_SIZE - 1){
+        Debug.Log("KEYCODE MISMATCH");
 
-    //         m_nMsgCount = DeviceProxy.KEY_CORD_SIZE - 2;
+        byte[] tmp_code = new byte[DeviceProxy.KEY_CORD_SIZE];
+        Array.Copy(m_ScanCode, tmp_code, DeviceProxy.KEY_CORD_SIZE);
+        Array.Copy(tmp_code, 1, m_ScanCode, 0, DeviceProxy.KEY_CORD_SIZE - 1);
+        m_ScanCode[DeviceProxy.KEY_CORD_SIZE - 1] = 0;
 
-    //         return false;
-    //     }
-    //     #else
-    //     if (m_nMsgCount == DeviceProxy.KEY_CORD_SIZE){
-    //         Debug.Log("KEYCODE MISMATCH");
+        m_nMsgCount = DeviceProxy.KEY_CORD_SIZE - 2;
 
-    //         buff_count = m_nMsgCount = 0;
-    //         Array.Clear(buff, 0, DeviceProxy.MAX_LINE);
-    //         Array.Clear(m_ScanCode, 0, DeviceProxy.KEY_CORD_SIZE);
+        return false;
+    }
+    #else
+    if (m_nMsgCount == DeviceProxy.KEY_CORD_SIZE){
+        Debug.Log("KEYCODE MISMATCH");
 
-    //         return true;
-    //     }
-    //     #endif
+        buff_count = m_nMsgCount = 0;
+        Array.Clear(buff, 0, DeviceProxy.MAX_LINE);
+        Array.Clear(m_ScanCode, 0, DeviceProxy.KEY_CORD_SIZE);
 
-    //     return false;
-    // }
+        return true;
+    }
+    #endif
+
+    return false;
+}
+
 
     // 배열 비교 함수   arr1 과 arr2 의 길이가 같다면 true
     static public bool CompareArrays(byte[] arr1, byte[] arr2, int length){

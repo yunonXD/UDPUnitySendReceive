@@ -57,9 +57,8 @@ public class UDP_ServerV2 : MonoBehaviour
         }
     }
 
-    // Unity에서 사용하는 함수
-    int MakeKeyString(byte[] dest, long input)
-    {
+
+    int MakeKeyString(byte[] dest, long input){
         // make input value to byte array
         byte[] temp = BitConverter.GetBytes(input);
         int len = 0;
