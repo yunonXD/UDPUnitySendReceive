@@ -2,6 +2,7 @@ using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 //192.168.0.54
@@ -13,8 +14,8 @@ public class UDP_Client : MonoBehaviour{
     private string LocalpressedKey =null;                       //입력키 저장 (키 누름 땜 인식을 위함)
     private StringBuilder pressedKeys = new StringBuilder();
 
-    [SerializeField] Text ClientState;
-    [SerializeField] Text ClientText;
+    [SerializeField] TextMeshProUGUI ClientState;
+    [SerializeField] TextMeshProUGUI ClientText;
 
     void Start(){
         udpClient = new UdpClient();
@@ -31,7 +32,7 @@ public class UDP_Client : MonoBehaviour{
             if (!wasAnyKeyPreviouslyPressed){
                 LocalpressedKey = GetPressedKeys();
                 SendKeyTable(LocalpressedKey);
-                Debug.Log("input in: "+LocalpressedKey);
+                //Debug.Log("input in: "+LocalpressedKey);
             }
             wasAnyKeyPreviouslyPressed = true;
         }
@@ -40,17 +41,15 @@ public class UDP_Client : MonoBehaviour{
             if (wasAnyKeyPreviouslyPressed){
                 LocalpressedKey = GetPressedKeys();
                 SendKeyTable(LocalpressedKey);
-                Debug.Log("input up: "+LocalpressedKey);
+                //Debug.Log("input up: "+LocalpressedKey);
             }
             wasAnyKeyPreviouslyPressed = false;
             LocalpressedKey=null;
             pressedKeys.Clear();
         }
-
     }
 
     string GetPressedKeys(){
-        
 
         // F1부터 F12까지 검사
         for(KeyCode keyCode = KeyCode.F1; keyCode <= KeyCode.F12; keyCode++){
