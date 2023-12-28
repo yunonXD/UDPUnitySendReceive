@@ -1,7 +1,8 @@
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
-    public class KeyTable{
+public class KeyTable{
     public string name = new string(' ', 20);
     public long make_val;
     public long break_val;
@@ -188,4 +189,6 @@ public static class KeyTables{
 
         return -1; // 해당하는 KeyTable을 찾지 못한 경우
     }
+
+
 }
