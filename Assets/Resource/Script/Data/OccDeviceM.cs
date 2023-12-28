@@ -30,12 +30,12 @@ public class OccDeviceM{
             if (DeviceProxy.BufferCount < DeviceProxy.MessageCount)
             {
                 DeviceProxy.BufferCount = DeviceProxy.MessageCount = 0;
-                System.Array.Clear(DeviceProxy.Buffer, 0, DeviceProxy.MAX_LINE);
-                System.Array.Clear(DeviceProxy.ScanCode, 0, DeviceProxy.KEY_CORD_SIZE);
+                Array.Clear(DeviceProxy.Buffer, 0, DeviceProxy.MAX_LINE);
+                Array.Clear(DeviceProxy.ScanCode, 0, DeviceProxy.KEY_CORD_SIZE);
                 return;
             }
 
-            System.Array.Copy(DeviceProxy.Buffer, DeviceProxy.ScanCode, DeviceProxy.MessageCount);
+            Array.Copy(DeviceProxy.Buffer, DeviceProxy.ScanCode, DeviceProxy.MessageCount);
             check();
             DeviceProxy.MessageCount++;
         }
@@ -46,8 +46,8 @@ public class OccDeviceM{
     //버퍼의 내용을 재배열. 
     //처리한 메시지를 제거하고, 나머지 메시지를 버퍼의 앞으로 이동시켜버림.
     public void replace_buff(){
-        System.Array.Copy(DeviceProxy.Buffer, DeviceProxy.MessageCount, DeviceProxy.Buffer, 0, DeviceProxy.MAX_LINE - DeviceProxy.MessageCount);
-        System.Array.Clear(DeviceProxy.ScanCode, 0, DeviceProxy.KEY_CORD_SIZE);
+        Array.Copy(DeviceProxy.Buffer, DeviceProxy.MessageCount, DeviceProxy.Buffer, 0, DeviceProxy.MAX_LINE - DeviceProxy.MessageCount);
+        Array.Clear(DeviceProxy.ScanCode, 0, DeviceProxy.KEY_CORD_SIZE);
 
         DeviceProxy.BufferCount -= DeviceProxy.MessageCount;
 
@@ -61,7 +61,7 @@ public class OccDeviceM{
         for (int j = 0; j < KeyTables.KEY_TABLE_SIZE; ++j){
             string keyName = KeyTables.keyTableDictionary.ElementAt(j).Key;
 
-            if (System.Array.Equals(KeyTables.keyTableDictionary[keyName].make_str, DeviceProxy.ScanCode)){
+            if (Array.Equals(KeyTables.keyTableDictionary[keyName].make_str, DeviceProxy.ScanCode)){
                 set_key_event(KeyTables.keyTableDictionary[keyName], true);
                 DeviceProxy.MessageCount = 0;
                 #if _QUEUE_
@@ -72,7 +72,7 @@ public class OccDeviceM{
                 return true;
                 #endif
             }
-            else if (System.Array.Equals(KeyTables.keyTableDictionary[keyName].break_str, DeviceProxy.ScanCode)){
+            else if (Array.Equals(KeyTables.keyTableDictionary[keyName].break_str, DeviceProxy.ScanCode)){
                 DeviceProxy.MessageCount = 0;
                 set_key_event(KeyTables.keyTableDictionary[keyName], false);
 
@@ -92,8 +92,8 @@ public class OccDeviceM{
             Debug.Log("KEYCODE MISMATCH\n");
 
             byte[] tmp_code = new byte[DeviceProxy.KEY_CORD_SIZE];
-            System.Array.Copy(m_ScanCode, tmp_code, DeviceProxy.KEY_CORD_SIZE);
-            System.Array.Copy(tmp_code, 1, m_ScanCode, 0, DeviceProxy.KEY_CORD_SIZE - 1);
+            Array.Copy(m_ScanCode, tmp_code, DeviceProxy.KEY_CORD_SIZE);
+            Array.Copy(tmp_code, 1, m_ScanCode, 0, DeviceProxy.KEY_CORD_SIZE - 1);
             m_ScanCode[DeviceProxy.KEY_CORD_SIZE - 1] = 0;
 
             m_nMsgCount = DeviceProxy.KEY_CORD_SIZE - 2;
@@ -105,8 +105,8 @@ public class OccDeviceM{
             Debug.Log("KEYCODE MISMATCH\n");
 
             DeviceProxy.BufferCount = DeviceProxy.MessageCount = 0;
-            System.Array.Clear(DeviceProxy.Buffer, 0, DeviceProxy.MAX_LINE);
-            System.Array.Clear(DeviceProxy.ScanCode, 0, DeviceProxy.KEY_CORD_SIZE);
+            Array.Clear(DeviceProxy.Buffer, 0, DeviceProxy.MAX_LINE);
+            Array.Clear(DeviceProxy.ScanCode, 0, DeviceProxy.KEY_CORD_SIZE);
 
         return true;
         }

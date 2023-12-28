@@ -1,277 +1,134 @@
 using UnityEngine;
-using UnityEngine.UI;
-using System.Collections.Generic;
 using System;
+using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using System.Net.Sockets;
 
 
-public class KeyTableManager : MonoBehaviour{
-
-    // 새로운 맵 및 키 이벤트 리스트 선언
-    static private PzMap<int, bool> key_events = new PzMap<int, bool>();
-    private const int KEY_TABLE_SIZE = 113;  //키 테이블 사이즈 (추가시 수정 요망)
-    public static Queue<byte> messageQueue = new Queue<byte>();   // 데이터 넣기위한 큐
-
-
-    //대략적인 상태 UI 에 띄우기
-    public Text serverStatusText;
-    public Text StateText;
-    public Text receivedMessageText;
-
-
-    [SerializeField] private int m_Port =9020;
-    private UdpClient udpServer;
-    private IPEndPoint remoteEndPoint;
-
-    void Start(){
+public class KeyTableManager{
+    
+    public KeyTableManager(){
         Clear();
         init_key_table();
-        UpdateServerStatus("Server started on port :" + m_Port);
     }
 
-    void Update(){
-
-        try{
-            CheckVerify();
-        }
-        catch(Exception e){
-            Debug.LogError("Error receiving data: " + e.Message);
-        }
-        set_dev_data();
-    }
-
-     private void UpdateServerStatus(string status){
-    
-        udpServer = new UdpClient(m_Port);
-        remoteEndPoint = new IPEndPoint(IPAddress.Any, m_Port);
-        serverStatusText.text = "Server Status: " + status;
-    }
-
-    private void UpdateReceivedMessage(string message){
-        receivedMessageText.text = "Received Message: " + message;
-    }
-
-    private void OnDestroy(){
-        if (udpServer != null)
-            udpServer.Close();
-    }
-
-
-    private async void CheckVerify(){
-        if (udpServer.Available > 0){
-
-            UdpReceiveResult result = await udpServer.ReceiveAsync();
-            //byte[] data = udpServer.Receive(ref remoteEndPoint);
-            //DeviceProxy.ScanCode = data;
-
-            byte[] data = result.Buffer;            // 수신된 데이터 버퍼
-            int dataLength = result.Buffer.Length;  // 수신된 데이터의 길이를 얻음
-            DeviceProxy.ScanCode = data;
-
-            Debug.Log(BitConverter.ToString(data));
-            //Debug.Log($"Data Length: {dataLength}");
-            //Debug.Log(Encoding.ASCII.GetString(data));  
-            }
-        else
-            StateText.text = "State" + " : ...";
-
-    }
-
-
-    // 키 입력 데이터 처리
+    //장치로부터 수신한 데이터를 처리
+    //하나는 데이터를 큐에서 추출하고, 다른 하나는 직접 버퍼에서 처리
     public static void set_dev_data(){
 
-        // using queue
+        #if _QUEUE_
         while (GetSize() > 0){
-            byte scanCode =0;
-            if (GetByte(ref scanCode)){
-                messageQueue.Enqueue(scanCode);
+            GetByte(ref DeviceProxy.scanCode[DeviceProxy.messageCount]);
+            if (!check())
+                DeviceProxy.messageCount++;
+        }
+        #else
+        DeviceProxy.MessageCount = 1;
+
+        while (DeviceProxy.BufferCount > 0){
+            if (DeviceProxy.BufferCount < DeviceProxy.MessageCount)
+            {
+                DeviceProxy.BufferCount = DeviceProxy.MessageCount = 0;
+                Array.Clear(DeviceProxy.Buffer, 0, DeviceProxy.MAX_LINE);
+                Array.Clear(DeviceProxy.ScanCode, 0, DeviceProxy.KEY_CORD_SIZE);
+                return;
             }
+
+            Array.Copy(DeviceProxy.Buffer, DeviceProxy.ScanCode, DeviceProxy.MessageCount);
+            Check();
+            DeviceProxy.MessageCount++;
         }
-        ProcessQueue();
+        #endif
     }
 
-    // 큐에 있는 메시지 처리    
-    public static void ProcessQueue(){
-        while (messageQueue.Count > 0){
-            messageQueue.TryDequeue(out byte scanCode);
-            DeviceProxy.ScanCode[DeviceProxy.MessageCount] = scanCode;
-            if (!Check())
-                DeviceProxy.MessageCount++;
-        }
-    }
 
-    // 버퍼를 갱신하는 함수
-    static public void replace_buff(){
+    //버퍼의 내용을 재배열. 
+    //처리한 메시지를 제거하고, 나머지 메시지를 버퍼의 앞으로 이동시켜버림.
+    public static void replace_buff(){
         Array.Copy(DeviceProxy.Buffer, DeviceProxy.MessageCount, DeviceProxy.Buffer, 0, DeviceProxy.MAX_LINE - DeviceProxy.MessageCount);
         Array.Clear(DeviceProxy.ScanCode, 0, DeviceProxy.KEY_CORD_SIZE);
+
         DeviceProxy.BufferCount -= DeviceProxy.MessageCount;
+
         DeviceProxy.MessageCount = 0;
     }
 
 
-    // 특정 키, 코드 패턴과 입력된 데이터를 비교하여 해당되는 키 이벤트를 처리하는 함수
+    //키 이벤트를 확인. 입력된 스캔코드가 키 이벤트와 일치하면 해당 이벤트를 설정하고,
+    //일치하지 않으면 에러 메시지를 로그에 출력
     public static bool Check(){
-
-        for (int j = 0; j < KEY_TABLE_SIZE; ++j){
-
+        for (int j = 0; j < KeyTables.KEY_TABLE_SIZE; ++j){
             string keyName = KeyTables.keyTableDictionary.ElementAt(j).Key;
 
-            if (CompareArrays(KeyTables.keyTableDictionary[keyName].make_str, DeviceProxy.ScanCode,
-                KeyTables.keyTableDictionary[keyName].make_str_len)){
-                set_key_event(j, true);
+            if (Array.Equals(KeyTables.keyTableDictionary[keyName].make_str, DeviceProxy.ScanCode)){
+                set_key_event(KeyTables.keyTableDictionary[keyName], true);
                 DeviceProxy.MessageCount = 0;
-
                 #if _QUEUE_
-                Debug.Log("using queue Clear");
-                Array.Clear(DeviceProxy.ScanCode, 0, DeviceProxy.KEY_CORD_SIZE);
+                System.Array.Clear(DeviceProxy.ScanCode, 0, DeviceProxy.KEY_CORD_SIZE);
                 return true;
                 #else
                 replace_buff();
                 return true;
                 #endif
             }
-            else if (CompareArrays(KeyTables.keyTableDictionary[keyName].break_str, DeviceProxy.ScanCode, KeyTables.keyTableDictionary[keyName].break_str_len)){
+            else if (Array.Equals(KeyTables.keyTableDictionary[keyName].break_str, DeviceProxy.ScanCode)){
                 DeviceProxy.MessageCount = 0;
-                set_key_event(j, false);
+                set_key_event(KeyTables.keyTableDictionary[keyName], false);
 
                 #if _QUEUE_
-                Debug.Log("using queue Clear");
-                Array.Clear(DeviceProxy.ScanCode, 0, DeviceProxy.KEY_CORD_SIZE);
+                System.Array.Clear(DeviceProxy.ScanCode, 0, DeviceProxy.KEY_CORD_SIZE);
                 return true;
                 #else
                 replace_buff();
                 return true;
                 #endif
+            }
         }
-    }
 
-        // 큐 사용하는데 없으면 false 리턴
-        Debug.Log("using queue. m_nMsgCount == DeviceProxy.KEY_CORD_SIZE - ? part(line number 104)");
 
-        if (DeviceProxy.MessageCount == DeviceProxy.KEY_CORD_SIZE - 1){
-            Debug.Log("KEYCODE MISMATCH");
+    #if _QUEUE_
+        if (m_nMsgCount == DeviceProxy.KEY_CORD_SIZE - 1){
+            Debug.Log("KEYCODE MISMATCH\n");
 
             byte[] tmp_code = new byte[DeviceProxy.KEY_CORD_SIZE];
-            Array.Copy(DeviceProxy.ScanCode, tmp_code, DeviceProxy.KEY_CORD_SIZE);
-            Array.Copy(tmp_code, 1, DeviceProxy.ScanCode, 0, DeviceProxy.KEY_CORD_SIZE - 1);
-            DeviceProxy.ScanCode[DeviceProxy.KEY_CORD_SIZE - 1] = 0;
+            Array.Copy(m_ScanCode, tmp_code, DeviceProxy.KEY_CORD_SIZE);
+            Array.Copy(tmp_code, 1, m_ScanCode, 0, DeviceProxy.KEY_CORD_SIZE - 1);
+            m_ScanCode[DeviceProxy.KEY_CORD_SIZE - 1] = 0;
 
-            DeviceProxy.MessageCount = DeviceProxy.KEY_CORD_SIZE - 2;
+            m_nMsgCount = DeviceProxy.KEY_CORD_SIZE - 2;
 
             return false;
         }
-    return false;
-}
+    #else
+        if (DeviceProxy.MessageCount == DeviceProxy.KEY_CORD_SIZE){
+            Debug.Log("KEYCODE MISMATCH\n");
 
+            DeviceProxy.BufferCount = DeviceProxy.MessageCount = 0;
+            Array.Clear(DeviceProxy.Buffer, 0, DeviceProxy.MAX_LINE);
+            Array.Clear(DeviceProxy.ScanCode, 0, DeviceProxy.KEY_CORD_SIZE);
 
-
-
-    // 특정 키, 코드 패턴과 입력된 데이터를 비교하여 해당되는 키 이벤트를 처리하는 함수
-    // public static bool Check(){
-    // for (int j = 0; j < KEY_TABLE_SIZE; ++j){
-    //     if (CompareArrays(KeyTables.keyTableDictionary[KeyTables.FindKeyStr(j.ToString())].make_str, DeviceProxy.ScanCode,
-    //          KeyTables.keyTableDictionary[KeyTables.FindKeyStr(j.ToString())].make_str_len)){
-
-    //         set_key_event(j, true);
-    //         DeviceProxy.MessageCount = 0;
-
-    //         #if _QUEUE_
-    //         Debug.Log("using queue Clear");
-    //         Array.Clear(m_ScanCode, 0, DeviceProxy.KEY_CORD_SIZE);
-    //         return true;
-    //         #else
-    //         Debug.Log("using replace_buff");
-    //         replace_buff();
-    //         return true;
-    //         #endif
-    //     }
-    //     else if (CompareArrays(KeyTables.keyTableDictionary[KeyTables.FindKeyStr(j.ToString())].break_str, DeviceProxy.ScanCode, KeyTables.keyTableDictionary[KeyTables.FindKeyStr(j.ToString())].break_str_len)){
-    //         DeviceProxy.MessageCount = 0;
-    //         set_key_event(j, false);
-
-    //         #if _QUEUE_
-    //         Debug.Log("using queue Clear");
-    //         Array.Clear(m_ScanCode, 0, DeviceProxy.KEY_CORD_SIZE);
-    //         return true;
-    //         #else
-    //         Debug.Log("using replace_buff");
-    //         replace_buff();
-    //         return true;
-    //         #endif
-    //     }   
-    // }
-
-    // // 큐 사용하는데 없으면 false 리턴
-    // #if _QUEUE_
-    // Debug.Log("using queue. m_nMsgCount == DeviceProxy.KEY_CORD_SIZE - ? part(line number 104)");
-    
-    // if (m_nMsgCount == DeviceProxy.KEY_CORD_SIZE - 1){
-    //     Debug.Log("KEYCODE MISMATCH");
-
-    //     byte[] tmp_code = new byte[DeviceProxy.KEY_CORD_SIZE];
-    //     Array.Copy(m_ScanCode, tmp_code, DeviceProxy.KEY_CORD_SIZE);
-    //     Array.Copy(tmp_code, 1, m_ScanCode, 0, DeviceProxy.KEY_CORD_SIZE - 1);
-    //     m_ScanCode[DeviceProxy.KEY_CORD_SIZE - 1] = 0;
-
-    //     m_nMsgCount = DeviceProxy.KEY_CORD_SIZE - 2;
-
-    //     return false;
-    // }
-    // #else
-    // if (DeviceProxy.MessageCount == DeviceProxy.KEY_CORD_SIZE){
-    //     Debug.Log("KEYCODE MISMATCH");
-
-    //     DeviceProxy.BufferCount = DeviceProxy.MessageCount = 0;
-    //     Array.Clear(DeviceProxy.Buffer, 0, DeviceProxy.MAX_LINE);
-    //     Array.Clear(DeviceProxy.ScanCode, 0, DeviceProxy.KEY_CORD_SIZE);
-
-    //     return true;
-    // }
-    // #endif
-
-    // return false;
-    // }
-
-
-
-    // 배열 비교 함수   arr1 과 arr2 의 길이가 같다면 true
-    static public bool CompareArrays(byte[] arr1, byte[] arr2, int length){
-
-        for (int i = 0; i < length; i++){
-            if (arr1[i] != arr2[i])
-                return false;
-        }
         return true;
-    }
+        }
+    #endif
 
-
-    public static void Clear(){
-
-        DeviceProxy.Head = DeviceProxy.Tail = 0;
-        Array.Clear(DeviceProxy.Buffer, 0, DeviceProxy.MAX_LINE);
-        Array.Clear(DeviceProxy.ScanCode, 0, DeviceProxy.KEY_CORD_SIZE);
-        DeviceProxy.MessageCount = 0;
+        return false;
     }
 
 
     // 키테이블 초기화
     public static void init_key_table(){
-    foreach (var keyTable in KeyTables.keyTableDictionary.Values){
-        keyTable.make_str_len = make_key_string(keyTable.make_str, keyTable.make_val);
+        foreach (var keyTable in KeyTables.keyTableDictionary.Values){
+            keyTable.make_str_len = MakeKeyString(keyTable.make_str, keyTable.make_val);
 
-        if (keyTable.make_str_len == 0)
-            throw new Exception("KeyTable initialization error: Length mismatch");
+            if (keyTable.make_str_len == 0)
+                throw new Exception("KeyTable initialization error: Length mismatch");
 
-        keyTable.break_str_len = make_key_string(keyTable.break_str, keyTable.break_val);
+            keyTable.break_str_len = MakeKeyString(keyTable.break_str, keyTable.break_val);
         }
     }
 
-    // 키테이블 초기화 (키의 문자열 및 길이 설정)
-    public static int  make_key_string(byte[] dest, long input){
-
+    //입력된 키 값을 바이트 배열로 변환
+    //변환된 바이트 배열은 키의 make_str 또는 break_str에 저장
+    public static int MakeKeyString(byte[] dest, long input){
         byte[] temp = new byte[DeviceProxy.KEY_CORD_SIZE];
         int len = 0;
 
@@ -279,7 +136,6 @@ public class KeyTableManager : MonoBehaviour{
         Array.Clear(dest, 0, DeviceProxy.KEY_CORD_SIZE);
 
         for (int i = 0; i < DeviceProxy.KEY_CORD_SIZE; i++){
-
             if (temp[i] == 0x00) break;
 
             dest[i] = temp[i];
@@ -297,20 +153,30 @@ public class KeyTableManager : MonoBehaviour{
         return len;
     }
 
-    // 키 이벤트 설정 함수
-    static void set_key_event(int key_idx, bool is_make){
-        key_events.Append(new RzPair<int, bool>(key_idx, is_make));
+    //키 이벤트를 설정.
+    //특정 키의 이벤트가 발생하면 이 함수를 호출하여 이벤트를 KeyEvent에 저장
+    private static void set_key_event(KeyTable keyTable, bool is_make){
+       DeviceProxy.KeyEvent.Append(new RzPair<int, bool>(KeyTables.GetKeyIndex(keyTable), is_make));
     }
 
-    //buff 크기 반환
-    public static int GetSize(){
 
+    //버퍼와 스캔코드, 메시지 카운트를 모두 초기화.
+    public static void Clear(){
+        DeviceProxy.Head = DeviceProxy.Tail = 0;
+        Array.Clear(DeviceProxy.Buffer, 0, DeviceProxy.MAX_LINE);
+        Array.Clear(DeviceProxy.ScanCode, 0, DeviceProxy.KEY_CORD_SIZE);
+        DeviceProxy.MessageCount = 0;
+    }
+
+
+    // 현재 버퍼에 저장된 데이터의 크기를 반환
+    public static int GetSize(){
         return (DeviceProxy.Head - DeviceProxy.Tail + DeviceProxy.MAX_LINE) % DeviceProxy.MAX_LINE;
     }
 
-    //buff 에 byte 추가 (여유 공간이 있다면)
-    private bool PutByte(byte b){
 
+    //버퍼에 바이트를 추가
+    public static bool PutByte(byte b){
         if (GetSize() == (DeviceProxy.MAX_LINE - 1))
             return false;
 
@@ -320,9 +186,9 @@ public class KeyTableManager : MonoBehaviour{
         return true;
     }
 
-    //buff 에 byte 가져오기 (비어있지 않다면)
-    public static bool GetByte(ref byte pb){
 
+    //버퍼에서 바이트를 추출
+    public static bool GetByte(ref byte pb){
         if (GetSize() == 0)
             return false;
 

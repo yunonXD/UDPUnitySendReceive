@@ -9,10 +9,16 @@ public class DeviceProxy{
     private static byte[] scanCode = new byte[KEY_CORD_SIZE];
     private static int bufferCount;
 
+    private static PzMap<int, bool> Key_events = new PzMap<int, bool>();
 
     //buff 키 이벤트 저장할 공간
     private static byte[] buffer = new byte[MAX_LINE];
     private static int head, tail;
+
+    public static PzMap<int, bool> KeyEvent {
+        get { return Key_events; }
+        set { Key_events = value; }
+    }
 
     public static int MessageCount{
         get { return messageCount; }

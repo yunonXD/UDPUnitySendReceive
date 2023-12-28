@@ -1,90 +1,121 @@
+using UnityEngine;
 using System;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
-using UnityEngine;
-using UnityEngine.UI;
+using System.Collections;
+using System.Runtime.InteropServices;
+using System.Collections.Generic;
+
+[StructLayout(LayoutKind.Sequential, Pack = 1)]
+public struct net_event_info
+{
+    public byte cmd;
+    public int oid;
+    public byte event_id;
+    [MarshalAs(UnmanagedType.ByValArray, SizeConst = 256)]
+    public char[] data;
+
+    public net_event_info(byte cmd, int oid, byte event_id, string data)
+    {
+        this.cmd = cmd;
+        this.oid = oid;
+        this.event_id = event_id;
+        this.data = new char[256];
+        Array.Copy(data.ToCharArray(), this.data, Math.Min(data.Length, 256));
+    }
+}
 
 public class UDP_ServerV2 : MonoBehaviour
 {
-    public Text serverStatusText;
-    public Text receivedMessageText;
-
-    private UdpClient udpServer;
+    private UdpClient udpClient;
     private IPEndPoint remoteEndPoint;
-    [SerializeField] private int PortNum = 5555;
-
-    const int KEYCODE_SIZE = 8; // Assuming KEYCODE_SIZE is 8
+    private Queue<byte[]> receivedDataQueue = new Queue<byte[]>(); // 수신된 데이터를 큐에 저장
+    private readonly object lockObject = new object(); // 큐에 접근할 때 사용할 lock 오브젝트
 
     void Start()
     {
-        udpServer = new UdpClient(PortNum);
+        int port = 9020;
+        udpClient = new UdpClient(port);
         remoteEndPoint = new IPEndPoint(IPAddress.Any, 0);
 
-        serverStatusText.text = "Server Status: " + PortNum;
+        // 수신을 처리하는 코루틴 시작
+        StartCoroutine(ReceiveDataCoroutine());
     }
 
     void Update()
     {
-        if (udpServer.Available > 0)
+        // 메인 스레드에서 큐에 쌓인 데이터 처리
+        lock (lockObject)
         {
-            byte[] receivedData = udpServer.Receive(ref remoteEndPoint);
-
-            // Check if the received data has a valid length
-            if (receivedData.Length == KEYCODE_SIZE)
+            while (receivedDataQueue.Count > 0)
             {
-                byte[] reversedData = new byte[KEYCODE_SIZE];
-                int len = MakeKeyString(reversedData, BitConverter.ToInt64(receivedData, 0));
-
-                // len이 KEYCODE_SIZE와 같은지 확인
-                if (len == KEYCODE_SIZE)
-                {
-                    string receivedString = Encoding.UTF8.GetString(reversedData);
-                    Debug.Log($"Received from {remoteEndPoint}: {receivedString}");
-
-                    // 받은 메시지를 UI에 표시
-                    receivedMessageText.text = $"Received from {remoteEndPoint}: {receivedString}   {receivedString.Length}";
-                }
-                else
-                {
-                    Debug.Log($"Invalid data length received from {remoteEndPoint}");
-                }
-            }
-            else
-            {
-                Debug.Log($"Invalid data length received from {remoteEndPoint}");
+                byte[] receivedData = receivedDataQueue.Dequeue();
+                ProcessReceivedData(receivedData);
             }
         }
     }
 
-
-    int MakeKeyString(byte[] dest, long input){
-        // make input value to byte array
-        byte[] temp = BitConverter.GetBytes(input);
-        int len = 0;
-
-        Array.Clear(dest, 0, KEYCODE_SIZE);
-
-        for (int i = 0; i < KEYCODE_SIZE; i++)
-        {
-            if (temp[i] == 0x00)
-                break;
-
-            dest[i] = temp[i];
-            len++;
-        }
-
-        if (len == 0)
-            return 0;
-
-        // reverse destination buffer
-        Array.Reverse(dest, 0, len);
-
-        return len;
-    }
-
-    void OnApplicationQuit()
+    IEnumerator ReceiveDataCoroutine()
     {
-        udpServer.Close();
+        while (true)
+        {
+            try
+            {
+                UdpReceiveResult result = udpClient.ReceiveAsync().Result;
+                byte[] receivedData = result.Buffer;
+
+                // 수신된 데이터를 큐에 저장
+                lock (lockObject)
+                {
+                    receivedDataQueue.Enqueue(receivedData);
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.LogError("Error: " + e.Message);
+            }
+
+            yield return null;
+        }
+    }
+
+    private void ProcessReceivedData(byte[] data)
+    {
+        int structSize = Marshal.SizeOf(typeof(net_event_info));
+        int messageCount = data.Length / structSize;
+
+        for (int i = 0; i < messageCount; i++)
+        {
+            // 수신된 데이터에서 net_event_info 구조체 추출
+            byte[] messageData = new byte[structSize];
+            Array.Copy(data, i * structSize, messageData, 0, structSize);
+
+            // 바이트 배열을 net_event_info 구조체로 변환
+            net_event_info eventInfo = ByteArrayToStructure<net_event_info>(messageData);
+
+            // eventInfo를 사용하여 구조체의 필드에 접근 가능
+            // 예: eventInfo.oid, eventInfo.event_id, eventInfo.cmd
+
+            // 수신된 데이터를 디버그로 찍어줌
+            Debug.Log($"Received Data - cmd: {eventInfo.cmd}, oid: {eventInfo.oid}, event_id: {eventInfo.event_id}, data: {new string(eventInfo.data)}");
+        }
+    }
+
+    // 바이트 배열을 구조체로 변환
+    private T ByteArrayToStructure<T>(byte[] bytes) where T : struct
+    {
+        T structure;
+        GCHandle handle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
+
+        try
+        {
+            structure = (T)Marshal.PtrToStructure(handle.AddrOfPinnedObject(), typeof(T));
+        }
+        finally
+        {
+            handle.Free();
+        }
+
+        return structure;
     }
 }

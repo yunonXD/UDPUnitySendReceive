@@ -1,15 +1,13 @@
 using System;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
-using Unity.VisualScripting;
+using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class UDPServer : MonoBehaviour{
-    public Text serverStatusText;
-    public Text StateText;
-    public Text receivedMessageText;
+    public TextMeshProUGUI serverStatusText;
+    public TextMeshProUGUI StateText;
+    public TextMeshProUGUI receivedMessageText;
 
     [SerializeField] private int m_Port =9020;
 
@@ -47,8 +45,7 @@ public class UDPServer : MonoBehaviour{
 
             byte[] data = result.Buffer;            // 수신된 데이터 버퍼
             int dataLength = result.Buffer.Length;  // 수신된 데이터의 길이를 얻음
-            Debug.Log(data.Length);
-            DeviceProxy.ScanCode = data;
+
 
             //Debug.Log(BitConverter.ToString(data));
             //Debug.Log($"Data Length: {dataLength}");
@@ -68,8 +65,6 @@ public class UDPServer : MonoBehaviour{
                 }
     
             }
-        else
-                StateText.text = "State" + " : ...";
     }
 
 
