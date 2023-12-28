@@ -16,6 +16,7 @@ public class UDP_Client : MonoBehaviour{
 
     [SerializeField] TextMeshProUGUI ClientState;
     [SerializeField] TextMeshProUGUI ClientText;
+    [SerializeField] TMP_InputField InputField_Client;
 
     void Start(){
         udpClient = new UdpClient();
@@ -26,7 +27,31 @@ public class UDP_Client : MonoBehaviour{
     }
 
     void Update(){
- 
+        
+        if (Input.anyKey){
+            // 아무 키가 눌린 상태에서만 실행되는 코드 작성
+            if (!wasAnyKeyPreviouslyPressed){
+                LocalpressedKey = GetPressedKeys();
+                SendKeyTable(LocalpressedKey);
+                //Debug.Log("input in: "+LocalpressedKey);
+            }
+            wasAnyKeyPreviouslyPressed = true;
+        }
+        else{
+            // 아무 키가 놓예진 상태에서만 실행되는 코드 작성
+            if (wasAnyKeyPreviouslyPressed){
+                LocalpressedKey = GetPressedKeys();
+                SendKeyTable(LocalpressedKey);
+                //Debug.Log("input up: "+LocalpressedKey);
+            }
+            wasAnyKeyPreviouslyPressed = false;
+            LocalpressedKey=null;
+            pressedKeys.Clear();
+        }
+    }
+
+
+    public void InputKeyClient(){
         if (Input.anyKey){
             // 아무 키가 눌린 상태에서만 실행되는 코드 작성
             if (!wasAnyKeyPreviouslyPressed){
