@@ -58,16 +58,31 @@ public class UDPServer : MonoBehaviour{
         while (receivedDataQueue.Count > 0){
             byte[] data = receivedDataQueue.Dequeue();
 
-            // 바이트 데이터를 이용하여 키 찾기
-            FindKeyFromData(data);
+            // 바이트 데이터에서 바이트가 들어있는 부분을 카운트하고 출력
+            int byteCount = 0;
+            for (int i = 0; i < data.Length; i++) {
+                if (data[i] != 0x00) {
+                    byteCount++;
+                }
+                else{
+                    break;
+                }
+        }
+        //Debug.Log("Byte Count: " + byteCount);
+
+        if (byteCount >= 1) {
+            // 바이트 배열의 첫 번째 값을 아스키 코드로 변환하여 출력
+            int asciiValue = data[0];
+            //Debug.Log("Received ASCII Value: " + asciiValue);
+
+            KeyTable keyTable = KeyTables.KeyTableForLong[asciiValue];
+            Debug.Log(keyTable.name);
+        }
+        else
+            Debug.LogWarning("Received Data is not sufficient to convert to Decimal.");
         }
     }
 
-    
-    private void FindKeyFromData(byte[] data){
-        // 받은 데이터를 기반으로 KeyTableManagerServer에서 키를 찾기
-
-    }
 
 
 

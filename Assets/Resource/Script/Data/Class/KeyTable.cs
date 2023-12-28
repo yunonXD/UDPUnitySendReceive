@@ -15,7 +15,7 @@ public class KeyTable{
     public int break_str_len;
 
     public KeyTable(){
-        System.Array.Clear(name.ToCharArray(), 0, name.Length);
+        Array.Clear(name.ToCharArray(), 0, name.Length);
         make_val = 0;
         break_val = 0;
         scan_key = 0;
@@ -36,7 +36,7 @@ public class KeyTable{
 
 public static class KeyTables{
     public static readonly Dictionary<string, KeyTable> keyTableDictionary = new Dictionary<string, KeyTable>();
-
+    public static readonly Dictionary<long ,KeyTable> KeyTableForLong = new Dictionary<long, KeyTable>();
     public const int KEY_TABLE_SIZE = 113;
 
     static KeyTables(){
@@ -167,6 +167,10 @@ public static class KeyTables{
 
         foreach (var keyTable in keyTables){
             keyTableDictionary[keyTable.name] = keyTable;
+        }
+
+        foreach(var keyTable in keyTables){
+            KeyTableForLong[keyTable.make_val] = keyTable;
         }
     }
 
