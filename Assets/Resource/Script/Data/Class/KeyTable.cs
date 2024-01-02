@@ -4,6 +4,7 @@ using System;
 
 public class KeyTable{
     public string name = new string(' ', 20);
+    public string KRname = new string (' ' , 20);
     public long make_val;
     public long break_val;
     public byte scan_key;
@@ -16,6 +17,7 @@ public class KeyTable{
 
     public KeyTable(){
         Array.Clear(name.ToCharArray(), 0, name.Length);
+        Array.Clear(KRname.ToCharArray() ,0 , KRname.Length);
         make_val = 0;
         break_val = 0;
         scan_key = 0;
@@ -24,13 +26,14 @@ public class KeyTable{
 
     //(키의 이름 , 눌렀을때 의 값 , 땠을때의 값 , 스캔코드 , 가상키)
     //또한 눌렀을때의 문자열 길이, 땠을때의 문자열 길이 저장
-    public KeyTable(string aName, long aMakeVal, long aBreakVal, byte aScanKey, byte aOSVirtualKey = 0){
+    public KeyTable(string aName, long aMakeVal, long aBreakVal, byte aScanKey, byte aOSVirtualKey = 0 ,string aKRname=null){
 
         name = aName;
         make_val = aMakeVal;
         break_val = aBreakVal;
         scan_key = aScanKey;
         os_vk_key = aOSVirtualKey;
+        KRname = aKRname;
     }
 }
 
@@ -47,32 +50,32 @@ public static class KeyTables{
 
         var keyTables = new KeyTable[]{
             
-            new KeyTable("A", 0x1C, 0xF01C, Scan_Code.SCAN_A, (byte)'A'),
-            new KeyTable("B", 0x32, 0xF032, Scan_Code.SCAN_B, (byte)'B'),
-            new KeyTable("C", 0x21, 0xF021, Scan_Code.SCAN_C, (byte)'C'),
-            new KeyTable("D", 0x23, 0xF023, Scan_Code.SCAN_D, (byte)'D'),
-            new KeyTable("E", 0x24, 0xF024, Scan_Code.SCAN_E, (byte)'E'),
-            new KeyTable("F", 0x2B, 0xF02B, Scan_Code.SCAN_F, (byte)'F'),
-            new KeyTable("G", 0x34, 0xF034, Scan_Code.SCAN_G, (byte)'G'),
-            new KeyTable("H", 0x33, 0xF033, Scan_Code.SCAN_H, (byte)'H'),
-            new KeyTable("I", 0x43, 0xF043, Scan_Code.SCAN_I, (byte)'I'),
-            new KeyTable("J", 0x3B, 0xF03B, Scan_Code.SCAN_J, (byte)'J'),
-            new KeyTable("K", 0x42, 0xF042, Scan_Code.SCAN_K, (byte)'K'),
-            new KeyTable("L", 0x4B, 0xF04B, Scan_Code.SCAN_L, (byte)'L'),
-            new KeyTable("M", 0x3A, 0xF03A, Scan_Code.SCAN_M, (byte)'M'),
-            new KeyTable("N", 0x31, 0xF031, Scan_Code.SCAN_N, (byte)'N'),
-            new KeyTable("O", 0x44, 0xF044, Scan_Code.SCAN_O, (byte)'O'),
-            new KeyTable("P", 0x4D, 0xF04D, Scan_Code.SCAN_P, (byte)'P'),
-            new KeyTable("Q", 0x15, 0xF015, Scan_Code.SCAN_Q, (byte)'Q'),
-            new KeyTable("R", 0x2D, 0xF02D, Scan_Code.SCAN_R, (byte)'R'),
-            new KeyTable("S", 0x1B, 0xF01B, Scan_Code.SCAN_S, (byte)'S'),
-            new KeyTable("T", 0x2C, 0xF02C, Scan_Code.SCAN_T, (byte)'T'),
-            new KeyTable("U", 0x3C, 0xF03C, Scan_Code.SCAN_U, (byte)'U'),
-            new KeyTable("V", 0x2A, 0xF02A, Scan_Code.SCAN_V, (byte)'V'),
-            new KeyTable("W", 0x1D, 0xF01D, Scan_Code.SCAN_W, (byte)'W'),
-            new KeyTable("X", 0x22, 0xF022, Scan_Code.SCAN_X, (byte)'X'),
-            new KeyTable("Y", 0x35, 0xF035, Scan_Code.SCAN_Y, (byte)'Y'),
-            new KeyTable("Z", 0x1A, 0xF01A, Scan_Code.SCAN_Z, (byte)'Z'),
+            new KeyTable("A", 0x1C, 0xF01C, Scan_Code.SCAN_A, (byte)'A' ,"ㅁ"),
+            new KeyTable("B", 0x32, 0xF032, Scan_Code.SCAN_B, (byte)'B' ,"ㅠ"),
+            new KeyTable("C", 0x21, 0xF021, Scan_Code.SCAN_C, (byte)'C' ,"ㅊ"),
+            new KeyTable("D", 0x23, 0xF023, Scan_Code.SCAN_D, (byte)'D' ,"ㅇ"),
+            new KeyTable("E", 0x24, 0xF024, Scan_Code.SCAN_E, (byte)'E',"ㄷ"),
+            new KeyTable("F", 0x2B, 0xF02B, Scan_Code.SCAN_F, (byte)'F',"ㄹ"),
+            new KeyTable("G", 0x34, 0xF034, Scan_Code.SCAN_G, (byte)'G',"ㅎ"),
+            new KeyTable("H", 0x33, 0xF033, Scan_Code.SCAN_H, (byte)'H',"ㅗ"),
+            new KeyTable("I", 0x43, 0xF043, Scan_Code.SCAN_I, (byte)'I',"ㅑ"),
+            new KeyTable("J", 0x3B, 0xF03B, Scan_Code.SCAN_J, (byte)'J',"ㅓ"),
+            new KeyTable("K", 0x42, 0xF042, Scan_Code.SCAN_K, (byte)'K',"ㅏ"),
+            new KeyTable("L", 0x4B, 0xF04B, Scan_Code.SCAN_L, (byte)'L',"ㅣ"),
+            new KeyTable("M", 0x3A, 0xF03A, Scan_Code.SCAN_M, (byte)'M',"ㅡ"),
+            new KeyTable("N", 0x31, 0xF031, Scan_Code.SCAN_N, (byte)'N',"ㅜ"),
+            new KeyTable("O", 0x44, 0xF044, Scan_Code.SCAN_O, (byte)'O',"ㅐ"),
+            new KeyTable("P", 0x4D, 0xF04D, Scan_Code.SCAN_P, (byte)'P',"ㅔ"),
+            new KeyTable("Q", 0x15, 0xF015, Scan_Code.SCAN_Q, (byte)'Q',"ㅂ"),
+            new KeyTable("R", 0x2D, 0xF02D, Scan_Code.SCAN_R, (byte)'R',"ㄱ"),
+            new KeyTable("S", 0x1B, 0xF01B, Scan_Code.SCAN_S, (byte)'S',"ㄴ"),
+            new KeyTable("T", 0x2C, 0xF02C, Scan_Code.SCAN_T, (byte)'T',"ㅅ"),
+            new KeyTable("U", 0x3C, 0xF03C, Scan_Code.SCAN_U, (byte)'U',"ㅕ"),
+            new KeyTable("V", 0x2A, 0xF02A, Scan_Code.SCAN_V, (byte)'V',"ㅍ"),
+            new KeyTable("W", 0x1D, 0xF01D, Scan_Code.SCAN_W, (byte)'W',"ㅈ"),
+            new KeyTable("X", 0x22, 0xF022, Scan_Code.SCAN_X, (byte)'X',"ㅌ"),
+            new KeyTable("Y", 0x35, 0xF035, Scan_Code.SCAN_Y, (byte)'Y',"ㅛ"),
+            new KeyTable("Z", 0x1A, 0xF01A, Scan_Code.SCAN_Z, (byte)'Z',"ㅋ"),
             new KeyTable("0", 0x45, 0xF045, Scan_Code.SCAN_0, (byte)'0'),
             new KeyTable("1", 0x16, 0xF016, Scan_Code.SCAN_1, (byte)'1'),
             new KeyTable("2", 0x1E, 0xF01E, Scan_Code.SCAN_2, (byte)'2'),
