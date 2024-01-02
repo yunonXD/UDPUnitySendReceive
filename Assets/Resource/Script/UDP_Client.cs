@@ -1,6 +1,7 @@
 using System;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 using System.Text;
 using TMPro;
 using UnityEngine;
@@ -48,6 +49,9 @@ public class UDP_Client : MonoBehaviour{
             LocalpressedKey=null;
             pressedKeys.Clear();
         }
+
+        
+ 
     }
 
 
@@ -83,9 +87,9 @@ public class UDP_Client : MonoBehaviour{
             }
         }
 
-        // Alt 키 검사
         if(Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt)){
-            pressedKeys.Append("Alt");
+            //SendKeyTable("change");
+            pressedKeys.Append("change");
         }
 
         // 나머지 키 검사
@@ -94,7 +98,6 @@ public class UDP_Client : MonoBehaviour{
                 pressedKeys.Append(c.ToString().ToUpper());
             }
         }
-
         return pressedKeys.ToString();
     }
 
@@ -140,7 +143,7 @@ public class UDP_Client : MonoBehaviour{
                     keyTable.break_str_len = make_key_string(keyTable.break_str, keyTable.break_val);
                     byte[] data_break_str = keyTable.break_str;
 
-                    await udpClient.SendAsync(data_break_str, keyTable.break_str_len);
+                    //await udpClient.SendAsync(data_break_str, keyTable.break_str_len);
 
                     ClientText.text = $"Sent break_str for key {keyName}";
                     keyTable.break_str_len=0;
