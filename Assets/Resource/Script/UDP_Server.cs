@@ -2,10 +2,10 @@ using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using TMPro;
 using UnityEngine;
 using System.Linq;
+using System.Runtime.InteropServices.WindowsRuntime;
 
 public class UDPServer : MonoBehaviour{
     [SerializeField] private TextMeshProUGUI serverStatusText;
@@ -54,35 +54,82 @@ public class UDPServer : MonoBehaviour{
         }
     }
 
-    private void ProcessReceivedData(){
-        while (receivedDataQueue.Count > 0){
-            byte[] data = receivedDataQueue.Dequeue();
+private Queue<byte[]> cumulativeDataQueue = new Queue<byte[]>(); // 모든 데이터를 누적하는 큐
 
-            // 바이트 데이터에서 바이트가 들어있는 부분을 카운트하고 출력
+private void ProcessReceivedData(){
+    while (receivedDataQueue.Count > 0){
+        byte[] newData = receivedDataQueue.Dequeue(); // 새로운 데이터를 큐에서 가져옴
+
+        // 큐에 있던 데이터와 합쳐서 새로운 큐를 만듦
+        Queue<byte[]> combinedQueue = new Queue<byte[]>(cumulativeDataQueue);
+        combinedQueue.Enqueue(newData);
+
+        // 바이트 데이터에서 바이트가 들어있는 부분을 카운트하고 출력
+        string accumulatedMessage = "";
+        foreach (byte[] data in combinedQueue) {
+            int byteCount = 0;
+            for (int i = 0; i < data.Length; i++) {
+                if (data[i] != 0x00) {
+                    byteCount++;
+                } else {
+                    break;
+                }
+            }
+
+            if (byteCount >= 1) {
+                // 바이트 배열의 값을 아스키 코드로 변환하여 누적된 메시지에 추가
+                for (int i = 0; i < byteCount; i++) {
+                    int asciiValue = data[i];
+                    KeyTable keyTable = KeyTables.KeyTableForLong[asciiValue];
+                    accumulatedMessage += keyTable.name;
+                }
+            } else {
+                Debug.LogWarning("Received Data is not sufficient to convert to Decimal.");
+            }
+        }
+
+        // 출력 업데이트
+        receivedMessageText.text = "Received Message: " + accumulatedMessage;
+
+        // 누적된 큐를 갱신
+        cumulativeDataQueue = new Queue<byte[]>(combinedQueue);
+    }
+}
+
+
+
+
+    public void _CheckQueueData(){
+        foreach(byte[] data in cumulativeDataQueue){
             int byteCount = 0;
             for (int i = 0; i < data.Length; i++) {
                 if (data[i] != 0x00) {
                     byteCount++;
                 }
-                else{
+                else 
                     break;
-                }
-        }
-        //Debug.Log("Byte Count: " + byteCount);
+                
+            }
 
-        if (byteCount >= 1) {
-            // 바이트 배열의 첫 번째 값을 아스키 코드로 변환하여 출력
-            int asciiValue = data[0];
-            //Debug.Log("Received ASCII Value: " + asciiValue);
-
-            KeyTable keyTable = KeyTables.KeyTableForLong[asciiValue];
-            Debug.Log(keyTable.name);
-        }
-        else
-            Debug.LogWarning("Received Data is not sufficient to convert to Decimal.");
-        }
+            if (byteCount >= 1) {
+                // 바이트 배열의 각 값을 아스키 코드로 변환하여 출력
+                for (int i = 0; i < byteCount; i++) {
+                    int asciiValue = data[i];
+                    Debug.Log(asciiValue);
+                }   
+            }
+            else 
+                Debug.LogWarning("Received Data is not sufficient to convert to Decimal.");
+            }
     }
 
+
+
+    public void _CheckQueueLenth(){
+
+        Debug.Log(cumulativeDataQueue.Count);
+
+    }
 
 
 

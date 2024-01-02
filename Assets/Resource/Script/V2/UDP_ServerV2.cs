@@ -33,7 +33,7 @@ public class UDP_ServerV2 : MonoBehaviour
     private readonly object lockObject = new object(); // 큐에 접근할 때 사용할 lock 오브젝트
 
     void Start()
-    {
+{
         int port = 9020;
         udpClient = new UdpClient(port);
         remoteEndPoint = new IPEndPoint(IPAddress.Any, 0);
@@ -42,13 +42,13 @@ public class UDP_ServerV2 : MonoBehaviour
         StartCoroutine(ReceiveDataCoroutine());
     }
 
-    void Update()
-    {
+    void Update(){
+
         // 메인 스레드에서 큐에 쌓인 데이터 처리
-        lock (lockObject)
-        {
-            while (receivedDataQueue.Count > 0)
-            {
+        lock (lockObject){
+
+            while (receivedDataQueue.Count > 0){
+
                 byte[] receivedData = receivedDataQueue.Dequeue();
                 ProcessReceivedData(receivedData);
             }
