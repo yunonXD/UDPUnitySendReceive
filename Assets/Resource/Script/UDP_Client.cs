@@ -34,7 +34,7 @@ public class UDP_Client : MonoBehaviour{
             if (!wasAnyKeyPreviouslyPressed){
                 LocalpressedKey = GetPressedKeys();
                 SendKeyTable(LocalpressedKey);
-                //Debug.Log("input in: "+LocalpressedKey);
+                Debug.Log("input in: "+LocalpressedKey);
             }
             wasAnyKeyPreviouslyPressed = true;
         }
@@ -50,32 +50,6 @@ public class UDP_Client : MonoBehaviour{
             pressedKeys.Clear();
         }
 
-        
- 
-    }
-
-
-    public void InputKeyClient(){
-        if (Input.anyKey){
-            // 아무 키가 눌린 상태에서만 실행되는 코드 작성
-            if (!wasAnyKeyPreviouslyPressed){
-                LocalpressedKey = GetPressedKeys();
-                SendKeyTable(LocalpressedKey);
-                //Debug.Log("input in: "+LocalpressedKey);
-            }
-            wasAnyKeyPreviouslyPressed = true;
-        }
-        else{
-            // 아무 키가 놓예진 상태에서만 실행되는 코드 작성
-            if (wasAnyKeyPreviouslyPressed){
-                LocalpressedKey = GetPressedKeys();
-                SendKeyTable(LocalpressedKey);
-                //Debug.Log("input up: "+LocalpressedKey);
-            }
-            wasAnyKeyPreviouslyPressed = false;
-            LocalpressedKey=null;
-            pressedKeys.Clear();
-        }
     }
 
     string GetPressedKeys(){
@@ -87,14 +61,52 @@ public class UDP_Client : MonoBehaviour{
             }
         }
 
+        // // Esc부터 Insert까지 검사
+        // for (KeyCode keyCode = KeyCode.Escape; keyCode <= KeyCode.Insert; keyCode++){
+        //     if (Input.GetKey(keyCode)){
+        //         pressedKeys.Append(keyCode.ToString());
+        //     }
+        // }
+
+        if(Input.GetKey(KeyCode.Backspace)){
+            pressedKeys.Append("BKSP");
+        }
+
+        if(Input.GetKey(KeyCode.Space)){
+            pressedKeys.Append("SPACE");
+        }
+
+        if(Input.GetKey(KeyCode.Return)){
+            pressedKeys.Append("ENTER");
+        }
+
+
         if(Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt)){
             //SendKeyTable("change");
             pressedKeys.Append("change");
         }
 
+        // 방향키 검사
+        if (Input.GetKey(KeyCode.UpArrow))
+        {
+            pressedKeys.Append("U ARROW");
+        }
+        if (Input.GetKey(KeyCode.DownArrow))
+        {
+            pressedKeys.Append("D ARROW");
+        }
+        if (Input.GetKey(KeyCode.LeftArrow))
+        {
+            pressedKeys.Append("L ARROW");
+        }
+        if (Input.GetKey(KeyCode.RightArrow))
+        {
+            pressedKeys.Append("R ARROW");
+        }
+
         // 나머지 키 검사
         foreach(char c in Input.inputString){
-            if(c != '\0'){
+            if(c != '\0' && c != '\b'&& !char.IsWhiteSpace(c)){
                 pressedKeys.Append(c.ToString().ToUpper());
             }
         }
@@ -143,7 +155,7 @@ public class UDP_Client : MonoBehaviour{
                     keyTable.break_str_len = make_key_string(keyTable.break_str, keyTable.break_val);
                     byte[] data_break_str = keyTable.break_str;
 
-                    //await udpClient.SendAsync(data_break_str, keyTable.break_str_len);
+                    await udpClient.SendAsync(data_break_str, keyTable.break_str_len);
 
                     ClientText.text = $"Sent break_str for key {keyName}";
                     keyTable.break_str_len=0;
@@ -198,8 +210,4 @@ public class UDP_Client : MonoBehaviour{
     return len;
     }
 
-    // 바이트 배열을 문자열로 변환하는 헬퍼 함수
-    string ByteArrayToString(byte[] byteArray){
-        return Encoding.ASCII.GetString(byteArray);
-    }
 }
