@@ -1,19 +1,18 @@
 using System;
-using System.Net;
+using System.Collections.Generic;
 using System.Net.Sockets;
-using System.Runtime.CompilerServices;
 using System.Text;
 using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 //192.168.0.54
 public class UDP_Client : MonoBehaviour{
     private const string serverIP = "192.168.0.54"; // 서버의 IP 주소
     private const int serverPort = 9020;        // 서버의 포트 번호
     private UdpClient udpClient;
-    private bool wasAnyKeyPreviouslyPressed = false;        //키 입력 여부 false=눌림 true=들림
     private string LocalpressedKey =null;                       //입력키 저장 (키 누름 땜 인식을 위함)
     private StringBuilder pressedKeys = new StringBuilder();
+    Queue<string> stringQueue = new Queue<string>();
+
 
     [SerializeField] TextMeshProUGUI ClientState;
     [SerializeField] TextMeshProUGUI ClientText;
@@ -28,91 +27,78 @@ public class UDP_Client : MonoBehaviour{
     }
 
     void Update(){
-        
-        if (Input.anyKey){
-            // 아무 키가 눌린 상태에서만 실행되는 코드 작성
-            if (!wasAnyKeyPreviouslyPressed){
-                LocalpressedKey = GetPressedKeys();
-                SendKeyTable(LocalpressedKey);
-                Debug.Log("input in: "+LocalpressedKey);
-            }
-            wasAnyKeyPreviouslyPressed = true;
-        }
-        else{
-            // 아무 키가 놓예진 상태에서만 실행되는 코드 작성
-            if (wasAnyKeyPreviouslyPressed){
-                LocalpressedKey = GetPressedKeys();
-                SendKeyTable(LocalpressedKey);
-                //Debug.Log("input up: "+LocalpressedKey);
-            }
-            wasAnyKeyPreviouslyPressed = false;
-            LocalpressedKey=null;
-            pressedKeys.Clear();
-        }
 
+        foreach (KeyCode keyCode in Enum.GetValues(typeof(KeyCode))){
+            if (Input.GetKeyDown(keyCode)){
+                LocalpressedKey = GetPressedKeys();
+                stringQueue.Enqueue(LocalpressedKey);
+                SendKeyTable(LocalpressedKey,Input.anyKey);
+            }
+            if(Input.GetKeyUp(keyCode)){
+                LocalpressedKey = stringQueue.Dequeue();
+                SendKeyTable(LocalpressedKey,Input.anyKey);
+            }
+        }
     }
 
     string GetPressedKeys(){
+        StringBuilder pressedKeys = new StringBuilder();
 
-        // F1부터 F12까지 검사
-        for(KeyCode keyCode = KeyCode.F1; keyCode <= KeyCode.F12; keyCode++){
-            if(Input.GetKey(keyCode)){
-            pressedKeys.Append(keyCode.ToString());
+        void AddKeyIfPressed(KeyCode keyCode, string keyName){
+            if (Input.GetKey(keyCode)){
+                pressedKeys.Append(keyName);
             }
         }
 
-        // // Esc부터 Insert까지 검사
-        // for (KeyCode keyCode = KeyCode.Escape; keyCode <= KeyCode.Insert; keyCode++){
-        //     if (Input.GetKey(keyCode)){
-        //         pressedKeys.Append(keyCode.ToString());
-        //     }
-        // }
-
-        if(Input.GetKey(KeyCode.Backspace)){
-            pressedKeys.Append("BKSP");
+        for (KeyCode keyCode = KeyCode.F1; keyCode <= KeyCode.F12; keyCode++){
+            if (Input.GetKey(keyCode)) pressedKeys.Append(keyCode.ToString());
         }
 
-        if(Input.GetKey(KeyCode.Space)){
-            pressedKeys.Append("SPACE");
+        AddKeyIfPressed(KeyCode.Backspace, "BKSP");
+        AddKeyIfPressed(KeyCode.Space, "SPACE");
+        AddKeyIfPressed(KeyCode.Return, "ENTER");
+        AddKeyIfPressed(KeyCode.Tab, "TAB");
+        AddKeyIfPressed(KeyCode.CapsLock, "CAPS");
+        AddKeyIfPressed(KeyCode.Print, "PRINT");
+        AddKeyIfPressed(KeyCode.ScrollLock, "SCROLL");
+        AddKeyIfPressed(KeyCode.Pause, "PAUSE");
+        AddKeyIfPressed(KeyCode.Insert, "INSERT");
+        AddKeyIfPressed(KeyCode.Home, "HOME");
+        AddKeyIfPressed(KeyCode.PageUp, "PAGEUP");
+        AddKeyIfPressed(KeyCode.Delete, "DELETE");
+        AddKeyIfPressed(KeyCode.End, "END");
+        AddKeyIfPressed(KeyCode.PageDown, "PAGEDOWN");
+        AddKeyIfPressed(KeyCode.Numlock, "NUMLOCK");
+    
+        AddKeyIfPressed(KeyCode.KeypadDivide, "KP /");
+        AddKeyIfPressed(KeyCode.KeypadMultiply, "KP *");
+        AddKeyIfPressed(KeyCode.KeypadMinus, "KP -");
+        AddKeyIfPressed(KeyCode.KeypadPlus, "KP +");
+        AddKeyIfPressed(KeyCode.KeypadEnter, "KP ENTER");
+        AddKeyIfPressed(KeyCode.KeypadPeriod, "KP .");
+        for (int i = 0; i <= 9; i++){
+            AddKeyIfPressed(KeyCode.Keypad0 + i, $"KP {i}");
         }
 
-        if(Input.GetKey(KeyCode.Return)){
-            pressedKeys.Append("ENTER");
-        }
+        AddKeyIfPressed(KeyCode.RightShift, "R SHIFT");
+        AddKeyIfPressed(KeyCode.LeftShift, "L SHIFT");
 
-
-        if(Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt)){
-            //SendKeyTable("change");
+        if (Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt)){
             pressedKeys.Append("change");
         }
 
-        // 방향키 검사
-        if (Input.GetKey(KeyCode.UpArrow))
-        {
-            pressedKeys.Append("U ARROW");
-        }
-        if (Input.GetKey(KeyCode.DownArrow))
-        {
-            pressedKeys.Append("D ARROW");
-        }
-        if (Input.GetKey(KeyCode.LeftArrow))
-        {
-            pressedKeys.Append("L ARROW");
-        }
-        if (Input.GetKey(KeyCode.RightArrow))
-        {
-            pressedKeys.Append("R ARROW");
-        }
+        AddKeyIfPressed(KeyCode.UpArrow, "U ARROW");
+        AddKeyIfPressed(KeyCode.DownArrow, "D ARROW");
+        AddKeyIfPressed(KeyCode.LeftArrow, "L ARROW");
+        AddKeyIfPressed(KeyCode.RightArrow, "R ARROW");
 
-        // 나머지 키 검사
-        foreach(char c in Input.inputString){
-            if(c != '\0' && c != '\b'&& !char.IsWhiteSpace(c)){
-                pressedKeys.Append(c.ToString().ToUpper());
-            }
-        }
+        foreach (char c in Input.inputString){
+            if (c != '\0' && c != '\b' && !char.IsWhiteSpace(c))
+                pressedKeys.Append(c.ToString().ToUpper());   
+        }   
+
         return pressedKeys.ToString();
     }
-
     
 
     void OnDestroy(){
@@ -128,44 +114,22 @@ public class UDP_Client : MonoBehaviour{
         }
     }
 
-    private async void SendKeyTable(string keyName){
-
+      private async void SendKeyTable(string keyName, bool keyDown){
         try{
-            // 키 테이블 가져오기
             if (KeyTables.keyTableDictionary.TryGetValue(keyName, out var keyTable)){
+                // 데이터 초기화
+                Array.Clear(keyTable.make_str, 0, keyTable.make_str.Length);
+                // make_str 또는 break_str을 바이트 배열로 변환하여 서버로 전송
+                int dataLen = keyDown ? make_key_string(keyTable.make_str, keyTable.make_val) : make_key_string(keyTable.break_str, keyTable.break_val);
+                byte[] data = keyDown ? keyTable.make_str : keyTable.break_str;
 
-                if(!wasAnyKeyPreviouslyPressed){        //키 down 상태일때
+                await udpClient.SendAsync(data, dataLen);
 
-                    // make_str 데이터 초기화
-                    Array.Clear(keyTable.make_str, 0, keyTable.make_str.Length);
-                    // keyTable의 make_str을 바이트 배열로 변환하여 서버로 전송
-                    keyTable.make_str_len = make_key_string(keyTable.make_str, keyTable.make_val);
-                    byte[] data_make_str = keyTable.make_str;
-
-                    await udpClient.SendAsync(data_make_str, keyTable.make_str_len);
-
-                    ClientText.text = $"Sent make_str for key {keyName}";
-                    keyTable.make_str_len=0;
-                }
-                else if(wasAnyKeyPreviouslyPressed){    //키 up 상태일때
-
-                    // break_str 데이터 초기화
-                    Array.Clear(keyTable.break_str, 0, keyTable.break_str.Length);
-                    // keyTable의 break_str을 바이트 배열로 변환하여 서버로 전송
-                    keyTable.break_str_len = make_key_string(keyTable.break_str, keyTable.break_val);
-                    byte[] data_break_str = keyTable.break_str;
-
-                    await udpClient.SendAsync(data_break_str, keyTable.break_str_len);
-
-                    ClientText.text = $"Sent break_str for key {keyName}";
-                    keyTable.break_str_len=0;
-                }
-                else
-                    Debug.LogError("key input errer");
-            }                
+                ClientText.text = $"Sent {(keyDown ? "make_str" : "break_str")} for key {keyName}";
+            }
         }
         catch (Exception e){
-            Debug.LogError($"Failed to send KeyTable data: {e.Message}");   
+            Debug.LogError($"Failed to send KeyTable data: {e.Message}");
         }
     }
 
