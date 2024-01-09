@@ -34,11 +34,11 @@ public class UDP_Client : MonoBehaviour{
                 stringQueue.Enqueue(LocalpressedKey);
                 SendKeyTable(LocalpressedKey,Input.anyKey);
             }
-            if(Input.GetKeyUp(keyCode)){
+            else if(Input.GetKeyUp(keyCode)){
                 LocalpressedKey = stringQueue.Dequeue();
                 SendKeyTable(LocalpressedKey,Input.anyKey);
-            }
-        }
+            }  
+        }  
     }
 
     string GetPressedKeys(){
