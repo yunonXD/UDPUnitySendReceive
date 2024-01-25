@@ -4,10 +4,10 @@ using System.Net.Sockets;
 using System.Text;
 using TMPro;
 using UnityEngine;
-//192.168.0.54
+
 public class UDP_Client : MonoBehaviour{
-    private const string serverIP = "192.168.0.54"; // 서버의 IP 주소
-    private const int serverPort = 9020;        // 서버의 포트 번호
+    private const string serverIP = "192.168.0.104"; // 서버의 IP 주소
+    private const int serverPort = 60006;        // 서버의 포트 번호
     private UdpClient udpClient;
     private string LocalpressedKey =null;                       //입력키 저장 (키 누름 땜 인식을 위함)
     private StringBuilder pressedKeys = new StringBuilder();
